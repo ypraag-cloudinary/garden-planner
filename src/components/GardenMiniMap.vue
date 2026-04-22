@@ -45,7 +45,7 @@ watch(() => props.activeRowId, () => {
           :key="row.id"
           :data-row-id="row.id"
           @click="goToRow(row.id)"
-          class="w-6 h-5 rounded text-[8px] font-bold flex items-center justify-center transition-all duration-150 cursor-pointer leading-none shrink-0 tabular-nums"
+          class="w-6 h-5 rounded text-[8px] font-bold flex items-center justify-center transition-colors duration-150 cursor-pointer leading-none shrink-0 tabular-nums"
           :class="[
             row.id === activeRowId
               ? 'bg-garden-500 text-white ring-2 ring-garden-300 ring-offset-1'
@@ -61,7 +61,7 @@ watch(() => props.activeRowId, () => {
           :key="row.id"
           :data-row-id="row.id"
           @click="goToRow(row.id)"
-          class="w-6 h-5 rounded text-[8px] font-bold flex items-center justify-center transition-all duration-150 cursor-pointer leading-none shrink-0 tabular-nums"
+          class="w-6 h-5 rounded text-[8px] font-bold flex items-center justify-center transition-colors duration-150 cursor-pointer leading-none shrink-0 tabular-nums"
           :class="[
             row.id === activeRowId
               ? 'bg-garden-500 text-white ring-2 ring-garden-300 ring-offset-1'
