@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect width="48" height="48" rx="12" fill="oklch(0.48 0.12 150)"/>
+  <path d="M24 38c0 0-2-4-2-10 0-4 1-7 2-9 1 2 2 5 2 9 0 6-2 10-2 10z" fill="oklch(0.86 0.08 145)" stroke="oklch(0.97 0.02 145)" stroke-width="0.5"/>
+  <path d="M24 28c-3-4-8-6-12-5 2 4 6 7 10 7h2z" fill="oklch(0.65 0.14 148)" stroke="oklch(0.97 0.02 145)" stroke-width="0.5"/>
+  <path d="M24 22c3-4 8-6 12-5-2 4-6 7-10 7h-2z" fill="oklch(0.55 0.14 150)" stroke="oklch(0.97 0.02 145)" stroke-width="0.5"/>
+  <circle cx="24" cy="38" r="2" fill="oklch(0.40 0.10 148)"/>
+</svg>

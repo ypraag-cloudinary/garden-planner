@@ -1,0 +1,194 @@
+<script setup lang="ts">
+import type { Segment } from '../types/database'
+import VegetableSelect from './VegetableSelect.vue'
+import { useVegetables } from '../composables/useVegetables'
+import { computed, ref } from 'vue'
+
+const props = withDefaults(defineProps<{
+  segment: Segment
+  index: number
+  rowLength: number
+  remainingPct: number
+  readonly: boolean
+}>(), {
+  remainingPct: 100,
+  readonly: false,
+})
+
+const emit = defineEmits<{
+  'update:segment': [segment: Segment]
+  remove: []
+}>()
+
+const { getVegetableColor } = useVegetables()
+
+const editingDate = ref(false)
+
+const accentColor = computed(() => {
+  return props.segment.vegetable ? getVegetableColor(props.segment.vegetable) : '#c5c0b8'
+})
+
+const daysSincePlanting = computed(() => {
+  if (!props.segment.planted_at) return null
+  const planted = new Date(props.segment.planted_at)
+  return Math.floor((Date.now() - planted.getTime()) / (1000 * 60 * 60 * 24))
+})
+
+const formattedDate = computed(() => {
+  if (!props.segment.planted_at) return 'לא הוגדר'
+  return new Date(props.segment.planted_at).toLocaleDateString('he-IL')
+})
+
+type LengthFraction = 0.33 | 0.5 | 0.66 | 1
+
+interface FractionOption {
+  value: LengthFraction
+  label: string
+}
+
+const allFractions: FractionOption[] = [
+  { value: 0.33, label: '1/3' },
+  { value: 0.5, label: '1/2' },
+  { value: 0.66, label: '2/3' },
+  { value: 1, label: 'הכל' },
+]
+
+const currentFraction = computed<LengthFraction | null>(() => {
+  if (!props.segment.length_m || !props.rowLength) return null
+  const ratio = props.segment.length_m / props.rowLength
+  if (Math.abs(ratio - 1) < 0.05) return 1
+  if (Math.abs(ratio - 0.66) < 0.05) return 0.66
+  if (Math.abs(ratio - 0.5) < 0.05) return 0.5
+  if (Math.abs(ratio - 0.33) < 0.05) return 0.33
+  return null
+})
+
+const budgetPct = computed(() => {
+  const own = currentFraction.value ? Math.round(currentFraction.value * 100) : 0
+  return props.remainingPct + own
+})
+
+const availableFractions = computed(() => {
+  return allFractions.filter((f) => Math.round(f.value * 100) <= budgetPct.value + 2)
+})
+
+function isFractionDisabled(fraction: LengthFraction) {
+  return Math.round(fraction * 100) > budgetPct.value + 2
+}
+
+function update(field: keyof Segment, value: unknown) {
+  emit('update:segment', { ...props.segment, [field]: value })
+}
+
+function setFraction(fraction: LengthFraction) {
+  if (props.readonly || isFractionDisabled(fraction)) return
+  const meters = Math.round(props.rowLength * fraction * 10) / 10
+  update('length_m', meters)
+}
+</script>
+
+<template>
+  <div
+    class="rounded-xl border border-soil-200 bg-white overflow-hidden"
+    :class="{ 'opacity-70': readonly }"
+  >
+    <div class="h-1" :style="{ backgroundColor: accentColor }" />
+    <div class="p-4 space-y-3.5" :class="{ 'pointer-events-none': readonly }">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-semibold text-soil-600">חלק {{ index + 1 }}</span>
+        <div class="flex items-center gap-2">
+          <span
+            v-if="daysSincePlanting !== null"
+            class="text-xs font-medium px-2 py-0.5 rounded-full tabular-nums"
+            :style="{ backgroundColor: accentColor + '18', color: accentColor }"
+          >
+            {{ daysSincePlanting }} ימים
+          </span>
+          <button
+            v-if="!readonly"
+            type="button"
+            @click="emit('remove')"
+            class="text-soil-400 hover:text-danger-600 text-xs px-2 py-1.5 rounded-lg hover:bg-danger-50 transition-colors duration-150 cursor-pointer flex items-center gap-1"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            הסר
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-soil-500 mb-1.5">ירק <span class="text-danger-500">*</span></label>
+        <VegetableSelect
+          :model-value="segment.vegetable"
+          @update:model-value="update('vegetable', $event)"
+        />
+        <p v-if="!segment.vegetable" class="text-xs text-danger-500 mt-1">חובה לבחור ירק</p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-soil-500 mb-1.5">תאריך שתילה</label>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-soil-800">{{ formattedDate }}</span>
+          <button
+            v-if="!editingDate && !readonly"
+            type="button"
+            @click="editingDate = true"
+            class="text-garden-600 hover:text-garden-700 cursor-pointer p-1.5 rounded-lg hover:bg-garden-50 transition-colors duration-150"
+            title="שנה תאריך"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+          <template v-if="editingDate && !readonly">
+            <input
+              type="date"
+              :value="segment.planted_at ?? ''"
+              @input="update('planted_at', ($event.target as HTMLInputElement).value || null); editingDate = false"
+              class="rounded-lg border border-soil-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-garden-500"
+            />
+            <button
+              type="button"
+              @click="editingDate = false"
+              class="text-xs text-soil-400 hover:text-soil-600 cursor-pointer py-1 px-2 rounded-lg hover:bg-soil-100 transition-colors duration-150"
+            >ביטול</button>
+          </template>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-soil-500 mb-1.5">אורך</label>
+        <div class="flex gap-2">
+          <button
+            v-for="frac in availableFractions"
+            :key="frac.value"
+            type="button"
+            @click="setFraction(frac.value)"
+            :disabled="isFractionDisabled(frac.value)"
+            class="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all duration-150"
+            :class="[
+              isFractionDisabled(frac.value)
+                ? 'border-soil-100 bg-soil-50 text-soil-300 cursor-not-allowed'
+                : currentFraction === frac.value
+                  ? 'border-garden-500 bg-garden-50 text-garden-700 cursor-pointer'
+                  : 'border-soil-200 bg-white text-soil-600 hover:border-soil-300 hover:bg-soil-50 cursor-pointer'
+            ]"
+          >{{ frac.label }}</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-soil-500 mb-1.5">הערות</label>
+        <textarea
+          :value="segment.notes ?? ''"
+          @input="update('notes', ($event.target as HTMLTextAreaElement).value || null)"
+          rows="2"
+          class="w-full rounded-lg border border-soil-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-garden-500 resize-none placeholder:text-soil-300"
+          placeholder="הערות..."
+        />
+      </div>
+    </div>
+  </div>
+</template>
