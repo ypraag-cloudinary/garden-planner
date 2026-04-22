@@ -172,7 +172,7 @@ async function save() {
 
 async function doArchive() {
   if (segments.value.length === 0) return
-  if (!confirm('להעביר את השתילה הנוכחית לארכיון? הערוגה תתרוקן.')) return
+  if (!confirm('פעולה זו תאפס את כל השדות ותעביר את השתילה הנוכחית לארכיון. להמשיך?')) return
   try {
     await archiveRow(props.rowId)
     segments.value = []
