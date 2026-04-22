@@ -10,6 +10,8 @@ const showAerial = ref(false)
 const route = useRoute()
 const { rows } = useRows()
 
+const isLogin = computed(() => route.name === 'login')
+
 const activeRowId = computed(() => {
   if (route.name === 'row' && route.params.id) {
     return parseInt(route.params.id as string, 10)
@@ -19,18 +21,21 @@ const activeRowId = computed(() => {
 </script>
 
 <template>
-  <AppLayout>
-    <template #header-right>
-      <button
-        @click="showAerial = true"
-        class="w-10 h-10 rounded-lg bg-garden-50 text-garden-700 flex items-center justify-center hover:bg-garden-100 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
-        title="מבט אווירי"
-      >
-        📷
-      </button>
-    </template>
-    <router-view />
-  </AppLayout>
-  <AerialView :open="showAerial" @close="showAerial = false" />
-  <GardenMiniMap v-if="rows.length > 0" :rows="rows" :active-row-id="activeRowId" />
+  <router-view v-if="isLogin" />
+  <template v-else>
+    <AppLayout>
+      <template #header-right>
+        <button
+          @click="showAerial = true"
+          class="w-10 h-10 rounded-lg bg-garden-50 text-garden-700 flex items-center justify-center hover:bg-garden-100 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
+          title="מבט אווירי"
+        >
+          📷
+        </button>
+      </template>
+      <router-view />
+    </AppLayout>
+    <AerialView :open="showAerial" @close="showAerial = false" />
+    <GardenMiniMap v-if="rows.length > 0" :rows="rows" :active-row-id="activeRowId" />
+  </template>
 </template>
