@@ -1,0 +1,10 @@
+---
+description: Project conventions for gina-planner
+alwaysApply: true
+---
+
+# Project Conventions
+
+- Package manager: **pnpm** (never use npm or yarn)
+- When suggesting or running install/run commands, always use `pnpm` (e.g. `pnpm install`, `pnpm run dev`, `pnpm dlx`)
+- Supabase: **remote instance** (use `pnpm supabase db push` for migrations, not local reset)
