@@ -1,4 +1,14 @@
 <script setup lang="ts">
+import { useAuth } from '../composables/useAuth'
+import { useRouter } from 'vue-router'
+
+const { signOut } = useAuth()
+const router = useRouter()
+
+async function handleLogout() {
+  await signOut()
+  router.replace('/login')
+}
 </script>
 
 <template>
@@ -9,7 +19,16 @@
           <span class="text-xl">🌱</span>
           <span>גינה קהילתית</span>
         </router-link>
-        <slot name="header-right" />
+        <div class="flex items-center gap-2">
+          <slot name="header-right" />
+          <button
+            @click="handleLogout"
+            class="w-10 h-10 rounded-lg bg-soil-50 text-soil-500 flex items-center justify-center hover:bg-soil-100 hover:text-soil-700 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
+            title="התנתק"
+          >
+            ⏻
+          </button>
+        </div>
       </div>
     </header>
     <main class="max-w-lg mx-auto">
