@@ -3,10 +3,12 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from './components/AppLayout.vue'
 import AerialView from './components/AerialView.vue'
+import GardenExport from './components/GardenExport.vue'
 import GardenMiniMap from './components/GardenMiniMap.vue'
 import { useRows } from './composables/useRows'
 
 const showAerial = ref(false)
+const showExport = ref(false)
 const route = useRoute()
 const { rows } = useRows()
 
@@ -26,6 +28,13 @@ const activeRowId = computed(() => {
     <AppLayout>
       <template #header-right>
         <button
+          @click="showExport = true"
+          class="w-10 h-10 rounded-lg bg-garden-50 text-garden-700 flex items-center justify-center hover:bg-garden-100 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
+          title="ייצוא מפת גינה"
+        >
+          📤
+        </button>
+        <button
           @click="showAerial = true"
           class="w-10 h-10 rounded-lg bg-garden-50 text-garden-700 flex items-center justify-center hover:bg-garden-100 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
           title="מבט אווירי"
@@ -36,6 +45,7 @@ const activeRowId = computed(() => {
       <router-view />
     </AppLayout>
     <AerialView :open="showAerial" @close="showAerial = false" />
+    <GardenExport :open="showExport" :rows="rows" @close="showExport = false" />
     <GardenMiniMap v-if="rows.length > 0" :rows="rows" :active-row-id="activeRowId" />
   </template>
 </template>
