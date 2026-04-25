@@ -2,21 +2,56 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import RowDetail from '../components/RowDetail.vue'
+import { useRows } from '../composables/useRows'
 
 const props = defineProps<{
   id: string
 }>()
 
 const router = useRouter()
+const { rows } = useRows()
 const rowId = computed(() => parseInt(props.id, 10))
 const detailRef = ref<InstanceType<typeof RowDetail> | null>(null)
+
+const sortedRowIds = computed(() => rows.value.map((r) => r.id).sort((a, b) => a - b))
+
+const prevRowId = computed(() => {
+  const ids = sortedRowIds.value
+  const idx = ids.indexOf(rowId.value)
+  if (idx <= 0) return ids[ids.length - 1]
+  return ids[idx - 1]
+})
+
+const nextRowId = computed(() => {
+  const ids = sortedRowIds.value
+  const idx = ids.indexOf(rowId.value)
+  if (idx < 0 || idx >= ids.length - 1) return ids[0]
+  return ids[idx + 1]
+})
 
 function onSaved() {
   // Stay on page — toast handles feedback
 }
 
+function checkUnsavedChanges(): boolean {
+  const detail = detailRef.value
+  if (!detail) return false
+  if (detail.editingProps) return true
+  return !detail.frozenRow && (detail.segments?.length ?? 0) > 0
+}
+
 function goBack() {
+  if (checkUnsavedChanges()) {
+    if (!confirm('יש שינויים שלא נשמרו. לצאת בכל זאת?')) return
+  }
   router.push({ name: 'home' })
+}
+
+function goToRow(id: number) {
+  if (checkUnsavedChanges()) {
+    if (!confirm('יש שינויים שלא נשמרו. לצאת בכל זאת?')) return
+  }
+  router.push({ name: 'row', params: { id } })
 }
 
 function handleArchive() {
@@ -42,7 +77,27 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
         </svg>
         חזרה
       </button>
-      <h1 class="text-base font-semibold text-soil-800">ערוגה {{ rowId }}</h1>
+      <div class="flex items-center gap-1">
+        <button
+          @click="goToRow(prevRowId)"
+          class="w-8 h-8 rounded-lg text-soil-500 hover:bg-soil-100 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          title="ערוגה קודמת"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+        <h1 class="text-base font-semibold text-soil-800 min-w-[4.5rem] text-center">ערוגה {{ rowId }}</h1>
+        <button
+          @click="goToRow(nextRowId)"
+          class="w-8 h-8 rounded-lg text-soil-500 hover:bg-soil-100 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          title="ערוגה הבאה"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
       <div class="flex items-center gap-1">
         <button
           v-if="hasSegments"
