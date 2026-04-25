@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { toPng } from 'html-to-image'
 import type { RowWithSegments } from '../types/database'
+import { useVegetables } from '../composables/useVegetables'
 
 const props = defineProps<{
   open: boolean
   rows: RowWithSegments[]
 }>()
+
+const { vegetables, fetchVegetables } = useVegetables()
+
+onMounted(fetchVegetables)
 
 const emit = defineEmits<{
   close: []
@@ -37,18 +42,45 @@ function formatAge(days: number | null): string {
   return `${months} ${months === 1 ? 'חודש' : 'חודשים'}`
 }
 
-function getDaysSincePlanting(row: RowWithSegments): number | null {
+function getEarliestPlantingDate(row: RowWithSegments): Date | null {
   const dates = row.segments
     .filter((s) => s.planted_at)
     .map((s) => new Date(s.planted_at!))
   if (dates.length === 0) return null
-  const earliest = new Date(Math.min(...dates.map((d) => d.getTime())))
-  return Math.floor((Date.now() - earliest.getTime()) / (1000 * 60 * 60 * 24))
+  return new Date(Math.min(...dates.map((d) => d.getTime())))
+}
+
+function formatPlantingInfo(row: RowWithSegments): string | null {
+  const earliest = getEarliestPlantingDate(row)
+  if (!earliest) return null
+  const days = Math.floor((Date.now() - earliest.getTime()) / (1000 * 60 * 60 * 24))
+  const dateStr = earliest.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
+  return `נשתל ${dateStr} (${formatAge(days)})`
+}
+
+const EMPTY_VEGETABLE = 'ריקה'
+
+function getVegetableIcon(name: string): string | null {
+  return vegetables.value.find((v) => v.name === name)?.icon ?? null
 }
 
 function getVegetableNames(row: RowWithSegments): string {
   if (row.segments.length === 0) return 'ריקה'
-  return row.segments.map((s) => s.vegetable).join(', ')
+  const planted = row.segments.filter((s) => s.vegetable !== EMPTY_VEGETABLE)
+  if (planted.length === 0) return 'ריקה'
+  return planted.map((s) => {
+    const icon = getVegetableIcon(s.vegetable)
+    return icon ? `${icon} ${s.vegetable}` : s.vegetable
+  }).join(', ')
+}
+
+function getRowNotes(row: RowWithSegments): string {
+  const parts: string[] = []
+  if (row.notes?.trim()) parts.push(row.notes.trim())
+  for (const seg of row.segments) {
+    if (seg.notes?.trim()) parts.push(`${seg.vegetable}: ${seg.notes.trim()}`)
+  }
+  return parts.join(' · ')
 }
 
 async function generateImage() {
@@ -208,10 +240,16 @@ watch(() => props.open, async (isOpen) => {
                         {{ getVegetableNames(row) }}
                       </div>
                       <div
-                        v-if="getDaysSincePlanting(row) !== null"
+                        v-if="formatPlantingInfo(row)"
                         style="font-size: 11px; color: #6a8a6a; margin-top: 2px"
                       >
-                        {{ formatAge(getDaysSincePlanting(row)) }}
+                        {{ formatPlantingInfo(row) }}
+                      </div>
+                      <div
+                        v-if="getRowNotes(row)"
+                        style="font-size: 10px; color: #a0a8a0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+                      >
+                        {{ getRowNotes(row) }}
                       </div>
                     </div>
                   </div>
@@ -255,10 +293,16 @@ watch(() => props.open, async (isOpen) => {
                         {{ getVegetableNames(row) }}
                       </div>
                       <div
-                        v-if="getDaysSincePlanting(row) !== null"
+                        v-if="formatPlantingInfo(row)"
                         style="font-size: 11px; color: #6a8a6a; margin-top: 2px"
                       >
-                        {{ formatAge(getDaysSincePlanting(row)) }}
+                        {{ formatPlantingInfo(row) }}
+                      </div>
+                      <div
+                        v-if="getRowNotes(row)"
+                        style="font-size: 10px; color: #a0a8a0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+                      >
+                        {{ getRowNotes(row) }}
                       </div>
                     </div>
                   </div>

@@ -22,9 +22,14 @@ const emit = defineEmits<{
 
 const { getVegetableColor } = useVegetables()
 
+const EMPTY_VEGETABLE = 'ריקה'
+
 const editingDate = ref(false)
 
+const isEmpty = computed(() => props.segment.vegetable === EMPTY_VEGETABLE)
+
 const accentColor = computed(() => {
+  if (isEmpty.value) return '#d4d0c8'
   return props.segment.vegetable ? getVegetableColor(props.segment.vegetable) : '#c5c0b8'
 })
 
@@ -80,6 +85,14 @@ function update(field: keyof Segment, value: unknown) {
   emit('update:segment', { ...props.segment, [field]: value })
 }
 
+function toggleEmpty(checked: boolean) {
+  if (checked) {
+    emit('update:segment', { ...props.segment, vegetable: EMPTY_VEGETABLE })
+  } else {
+    emit('update:segment', { ...props.segment, vegetable: '' })
+  }
+}
+
 function setFraction(fraction: LengthFraction) {
   if (props.readonly || isFractionDisabled(fraction)) return
   const meters = Math.round(props.rowLength * fraction * 10) / 10
@@ -89,13 +102,18 @@ function setFraction(fraction: LengthFraction) {
 
 <template>
   <div
-    class="rounded-xl border border-soil-200 bg-white overflow-hidden"
-    :class="{ 'opacity-70': readonly }"
+    class="rounded-xl border bg-white overflow-hidden"
+    :class="[
+      readonly ? 'opacity-70' : '',
+      isEmpty ? 'border-soil-100 bg-soil-50/50' : 'border-soil-200',
+    ]"
   >
     <div class="h-1" :style="{ backgroundColor: accentColor }" />
     <div class="p-4 space-y-3.5" :class="{ 'pointer-events-none': readonly }">
       <div class="flex items-center justify-between">
-        <span class="text-sm font-semibold text-soil-600">חלק {{ index + 1 }}</span>
+        <span class="text-sm font-semibold" :class="isEmpty ? 'text-soil-400' : 'text-soil-600'">
+          {{ isEmpty ? 'חלק ריק' : `חלק ${index + 1}` }}
+        </span>
         <div class="flex items-center gap-2">
           <span
             v-if="daysSincePlanting !== null"
@@ -119,15 +137,26 @@ function setFraction(fraction: LengthFraction) {
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-soil-500 mb-1.5">ירק <span class="text-danger-500">*</span></label>
-        <VegetableSelect
-          :model-value="segment.vegetable"
-          @update:model-value="update('vegetable', $event)"
-        />
-        <p v-if="!segment.vegetable" class="text-xs text-danger-500 mt-1">חובה לבחור ירק</p>
+        <label v-if="!readonly" class="flex items-center gap-2 mb-2 cursor-pointer">
+          <input
+            type="checkbox"
+            :checked="isEmpty"
+            @change="toggleEmpty(($event.target as HTMLInputElement).checked)"
+            class="w-4 h-4 rounded border-soil-300 text-soil-500 focus:ring-soil-400"
+          />
+          <span class="text-xs font-medium text-soil-500">חלק ריק</span>
+        </label>
+        <template v-if="!isEmpty">
+          <label class="block text-xs font-medium text-soil-500 mb-1.5">ירק <span class="text-danger-500">*</span></label>
+          <VegetableSelect
+            :model-value="segment.vegetable"
+            @update:model-value="update('vegetable', $event)"
+          />
+          <p v-if="!segment.vegetable" class="text-xs text-danger-500 mt-1">חובה לבחור ירק</p>
+        </template>
       </div>
 
-      <div>
+      <div v-if="!isEmpty">
         <label class="block text-xs font-medium text-soil-500 mb-1.5">תאריך שתילה</label>
         <div class="flex items-center gap-2">
           <span class="text-sm text-soil-800">{{ formattedDate }}</span>

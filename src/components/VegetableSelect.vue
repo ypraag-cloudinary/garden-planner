@@ -10,16 +10,21 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const { vegetables, fetchVegetables, addVegetable } = useVegetables()
+const { vegetables, fetchVegetables } = useVegetables()
 
 const isOpen = ref(false)
 const search = ref('')
-const newName = ref('')
+
+const EMPTY_VEGETABLE = 'ריקה'
+
+const selectable = computed(() =>
+  vegetables.value.filter((v) => v.name !== EMPTY_VEGETABLE)
+)
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
-  if (!q) return vegetables.value
-  return vegetables.value.filter((v) => v.name.toLowerCase().includes(q))
+  if (!q) return selectable.value
+  return selectable.value.filter((v) => v.name.toLowerCase().includes(q))
 })
 
 const selectedVeg = computed(() =>
@@ -28,20 +33,12 @@ const selectedVeg = computed(() =>
 
 function open() {
   search.value = ''
-  newName.value = ''
   isOpen.value = true
 }
 
 function select(name: string) {
   emit('update:modelValue', name)
   isOpen.value = false
-}
-
-async function createAndSelect() {
-  const name = newName.value.trim()
-  if (!name) return
-  await addVegetable(name)
-  select(name)
 }
 
 onMounted(fetchVegetables)
@@ -88,40 +85,21 @@ onMounted(fetchVegetables)
           </div>
 
           <div class="flex-1 overflow-y-auto p-3">
-            <div class="grid grid-cols-4 gap-1.5">
+            <div class="flex flex-col gap-1">
               <button
                 v-for="veg in filtered"
                 :key="veg.id"
                 type="button"
                 @click="select(veg.name)"
-                class="flex flex-col items-center gap-1 p-2.5 rounded-xl hover:bg-garden-50 active:scale-[0.97] transition-all duration-150 cursor-pointer text-center"
+                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-garden-50 active:scale-[0.99] transition-all duration-150 cursor-pointer text-right"
                 :class="modelValue === veg.name ? 'bg-garden-100 ring-2 ring-garden-500' : ''"
               >
-                <span class="text-2xl leading-none">{{ veg.icon || '🌱' }}</span>
-                <span class="text-xs text-soil-700 leading-tight line-clamp-2">{{ veg.name }}</span>
+                <span class="text-xl leading-none shrink-0">{{ veg.icon || '🌱' }}</span>
+                <span class="text-sm text-soil-700">{{ veg.name }}</span>
               </button>
             </div>
             <div v-if="filtered.length === 0" class="text-center py-10 text-soil-400 text-sm">
               לא נמצאו ירקות
-            </div>
-          </div>
-
-          <div class="px-4 py-3 border-t border-soil-100 bg-soil-50">
-            <div class="flex gap-2">
-              <input
-                v-model="newName"
-                type="text"
-                placeholder="הוסף ירק חדש..."
-                class="flex-1 rounded-lg border border-soil-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-garden-500 placeholder:text-soil-300"
-                @keydown.enter="createAndSelect"
-              />
-              <button
-                @click="createAndSelect"
-                :disabled="!newName.trim()"
-                class="px-4 py-2.5 rounded-lg bg-garden-600 text-white text-sm font-medium hover:bg-garden-700 active:scale-[0.97] disabled:opacity-40 transition-all duration-150 cursor-pointer"
-              >
-                הוסף
-              </button>
             </div>
           </div>
         </div>

@@ -7,9 +7,13 @@ const props = defineProps<{
   row: RowWithSegments
 }>()
 
+const EMPTY_VEGETABLE = 'ריקה'
+
 const vegetableNames = computed(() => {
   if (props.row.segments.length === 0) return 'ריקה'
-  return props.row.segments.map((s) => s.vegetable).join(', ')
+  const planted = props.row.segments.filter((s) => s.vegetable !== EMPTY_VEGETABLE)
+  if (planted.length === 0) return 'ריקה'
+  return planted.map((s) => s.vegetable).join(', ')
 })
 
 const daysSincePlanting = computed(() => {

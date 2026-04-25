@@ -10,6 +10,8 @@ const props = defineProps<{
 
 const { getVegetableColor } = useVegetables()
 
+const EMPTY_VEGETABLE = 'ריקה'
+
 const bars = computed(() => {
   if (props.segments.length === 0) return []
 
@@ -19,10 +21,11 @@ const bars = computed(() => {
     const pct = totalAllocated > 0 && seg.length_m
       ? (seg.length_m / props.rowLength) * 100
       : 100 / props.segments.length
+    const isEmpty = seg.vegetable === EMPTY_VEGETABLE
     return {
       id: seg.id,
       vegetable: seg.vegetable,
-      color: getVegetableColor(seg.vegetable),
+      color: isEmpty ? '#d4d0c8' : getVegetableColor(seg.vegetable),
       width: Math.max(pct, 5),
     }
   })
