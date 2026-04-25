@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import type { GardenRow, Segment, SegmentHistory } from '../types/database'
 import { useSegments } from '../composables/useSegments'
 import { useRows } from '../composables/useRows'
@@ -161,12 +161,30 @@ async function save() {
     }
 
     await saveAllSegments(props.rowId, valid)
-    segments.value = valid
-    frozenRow.value = true
+    const freshSegments = await fetchSegments(props.rowId)
+    segments.value = freshSegments
+    frozenRow.value = freshSegments.length > 0 && freshSegments.every((s) => !!s.id)
+    await fetchRows()
     showToast('נשמר בהצלחה', 'success')
     emit('saved')
-  } catch {
+  } catch (e) {
+    console.error('SAVE ERROR:', e)
     showToast('שגיאה בשמירה', 'error')
+  }
+}
+
+async function markEmpty() {
+  if (segments.value.length === 0) return
+  if (!confirm('פעולה זו תסיר את כל השתילות מהערוגה. להמשיך?')) return
+  try {
+    await saveAllSegments(props.rowId, [])
+    segments.value = []
+    frozenRow.value = false
+    await fetchRows()
+    showToast('הערוגה סומנה כריקה', 'success')
+    emit('saved')
+  } catch {
+    showToast('שגיאה בעדכון', 'error')
   }
 }
 
@@ -193,11 +211,16 @@ function formatDate(dateStr: string) {
 defineExpose({
   doArchive,
   openHistory,
+  markEmpty,
   segments,
+  frozenRow,
+  editingProps,
   archiving,
 })
 
 onMounted(load)
+
+watch(() => props.rowId, load)
 </script>
 
 <template>
@@ -355,6 +378,18 @@ onMounted(load)
         <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
       </svg>
       ערוך שתילה
+    </button>
+
+    <!-- Mark row as empty -->
+    <button
+      v-if="segments.length > 0"
+      @click="markEmpty"
+      class="w-full py-2.5 rounded-xl border border-soil-300 bg-soil-50 text-soil-600 text-sm font-medium hover:bg-soil-100 transition-colors duration-150 cursor-pointer flex items-center justify-center gap-2"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+      </svg>
+      סמן כריקה
     </button>
 
     <!-- History modal -->
