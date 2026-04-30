@@ -23,8 +23,8 @@ const generating = ref(false)
 
 const canShare = typeof navigator !== 'undefined' && !!navigator.share
 
-const leftRows = computed(() => props.rows.filter((r) => r.section === 'left'))
-const rightRows = computed(() => props.rows.filter((r) => r.section === 'right'))
+const sectionARows = computed(() => props.rows.filter((r) => r.section === 'left'))
+const sectionBRows = computed(() => props.rows.filter((r) => r.section === 'right'))
 
 const todayFormatted = computed(() =>
   new Date().toLocaleDateString('he-IL', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -54,8 +54,10 @@ function formatPlantingInfo(row: RowWithSegments): string | null {
   const earliest = getEarliestPlantingDate(row)
   if (!earliest) return null
   const days = Math.floor((Date.now() - earliest.getTime()) / (1000 * 60 * 60 * 24))
-  const dateStr = earliest.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
-  return `נשתל ${dateStr} (${formatAge(days)})`
+  const dd = String(earliest.getDate()).padStart(2, '0')
+  const mm = String(earliest.getMonth() + 1).padStart(2, '0')
+  const yyyy = earliest.getFullYear()
+  return `נשתל ${dd}/${mm}/${yyyy} (${formatAge(days)})`
 }
 
 const EMPTY_VEGETABLE = 'ריקה'
@@ -185,15 +187,15 @@ watch(() => props.open, async (isOpen) => {
             ref="renderTarget"
             dir="rtl"
             style="
-              width: 720px;
-              padding: 32px;
+              width: 400px;
+              padding: 24px;
               background: #f7faf7;
               font-family: Rubik, system-ui, sans-serif;
               color: #3d4a3d;
               line-height: 1.5;
             "
           >
-            <div style="text-align: center; margin-bottom: 24px">
+            <div style="text-align: center; margin-bottom: 20px">
               <div style="font-size: 22px; font-weight: 600; color: #2d5a3d">
                 🌱 גינה קהילתית
               </div>
@@ -202,109 +204,109 @@ watch(() => props.open, async (isOpen) => {
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; direction: ltr">
-              <div>
-                <div style="font-size: 11px; font-weight: 600; color: #8a9a8a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; text-align: right; direction: rtl">
-                  צד שמאל · ערוגות 1–13
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="font-size: 14px; font-weight: 700; color: #2d5a3d; padding: 8px 0; margin-bottom: 8px; border-bottom: 2px solid #c8dcc8">
+              ערוגות 1–13
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px">
+              <div
+                v-for="row in sectionARows"
+                :key="row.id"
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 10px;
+                  background: white;
+                  border: 1px solid #e0e8e0;
+                  border-radius: 10px;
+                  padding: 10px 12px;
+                "
+              >
+                <div style="
+                  width: 34px;
+                  height: 34px;
+                  border-radius: 8px;
+                  background: #ddf0dd;
+                  color: #2d5a3d;
+                  font-weight: 700;
+                  font-size: 15px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                ">{{ row.id }}</div>
+                <div style="flex: 1; min-width: 0; overflow: hidden">
+                  <div style="font-size: 15px; font-weight: 500; color: #3d4a3d; overflow-wrap: break-word; word-break: break-word; line-height: 1.6">
+                    {{ getVegetableNames(row) }}
+                    <span
+                      v-if="row.has_trellis"
+                      style="font-size: 11px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 1px 5px; border-radius: 4px; margin-inline-start: 4px; vertical-align: middle"
+                    >הדליה</span>
+                  </div>
                   <div
-                    v-for="row in leftRows"
-                    :key="row.id"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 10px;
-                      background: white;
-                      border: 1px solid #e0e8e0;
-                      border-radius: 10px;
-                      padding: 10px 12px;
-                      direction: rtl;
-                    "
+                    v-if="formatPlantingInfo(row)"
+                    style="font-size: 13px; color: #6a8a6a; margin-top: 4px; line-height: 1.4"
                   >
-                    <div style="
-                      width: 32px;
-                      height: 32px;
-                      border-radius: 8px;
-                      background: #ddf0dd;
-                      color: #2d5a3d;
-                      font-weight: 700;
-                      font-size: 14px;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      flex-shrink: 0;
-                    ">{{ row.id }}</div>
-                    <div style="flex: 1; min-width: 0">
-                      <div style="font-size: 13px; font-weight: 500; color: #3d4a3d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
-                        {{ getVegetableNames(row) }}
-                      </div>
-                      <div
-                        v-if="formatPlantingInfo(row)"
-                        style="font-size: 11px; color: #6a8a6a; margin-top: 2px"
-                      >
-                        {{ formatPlantingInfo(row) }}
-                      </div>
-                      <div
-                        v-if="getRowNotes(row)"
-                        style="font-size: 10px; color: #a0a8a0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
-                      >
-                        {{ getRowNotes(row) }}
-                      </div>
-                    </div>
+                    {{ formatPlantingInfo(row) }}
+                  </div>
+                  <div
+                    v-if="getRowNotes(row)"
+                    style="font-size: 12px; color: #a0a8a0; margin-top: 4px; overflow-wrap: break-word; word-break: break-word; line-height: 1.4"
+                  >
+                    {{ getRowNotes(row) }}
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div>
-                <div style="font-size: 11px; font-weight: 600; color: #8a9a8a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; text-align: right; direction: rtl">
-                  צד ימין · ערוגות 14–27
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="font-size: 14px; font-weight: 700; color: #2d5a3d; padding: 8px 0; margin-bottom: 8px; border-bottom: 2px solid #c8dcc8">
+              ערוגות 14–27
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div
+                v-for="row in sectionBRows"
+                :key="row.id"
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 10px;
+                  background: white;
+                  border: 1px solid #e0e8e0;
+                  border-radius: 10px;
+                  padding: 10px 12px;
+                "
+              >
+                <div style="
+                  width: 34px;
+                  height: 34px;
+                  border-radius: 8px;
+                  background: #ddf0dd;
+                  color: #2d5a3d;
+                  font-weight: 700;
+                  font-size: 15px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                ">{{ row.id }}</div>
+                <div style="flex: 1; min-width: 0; overflow: hidden">
+                  <div style="font-size: 15px; font-weight: 500; color: #3d4a3d; overflow-wrap: break-word; word-break: break-word; line-height: 1.6">
+                    {{ getVegetableNames(row) }}
+                    <span
+                      v-if="row.has_trellis"
+                      style="font-size: 11px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 1px 5px; border-radius: 4px; margin-inline-start: 4px; vertical-align: middle"
+                    >הדליה</span>
+                  </div>
                   <div
-                    v-for="row in rightRows"
-                    :key="row.id"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 10px;
-                      background: white;
-                      border: 1px solid #e0e8e0;
-                      border-radius: 10px;
-                      padding: 10px 12px;
-                      direction: rtl;
-                    "
+                    v-if="formatPlantingInfo(row)"
+                    style="font-size: 13px; color: #6a8a6a; margin-top: 4px; line-height: 1.4"
                   >
-                    <div style="
-                      width: 32px;
-                      height: 32px;
-                      border-radius: 8px;
-                      background: #ddf0dd;
-                      color: #2d5a3d;
-                      font-weight: 700;
-                      font-size: 14px;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      flex-shrink: 0;
-                    ">{{ row.id }}</div>
-                    <div style="flex: 1; min-width: 0">
-                      <div style="font-size: 13px; font-weight: 500; color: #3d4a3d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
-                        {{ getVegetableNames(row) }}
-                      </div>
-                      <div
-                        v-if="formatPlantingInfo(row)"
-                        style="font-size: 11px; color: #6a8a6a; margin-top: 2px"
-                      >
-                        {{ formatPlantingInfo(row) }}
-                      </div>
-                      <div
-                        v-if="getRowNotes(row)"
-                        style="font-size: 10px; color: #a0a8a0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
-                      >
-                        {{ getRowNotes(row) }}
-                      </div>
-                    </div>
+                    {{ formatPlantingInfo(row) }}
+                  </div>
+                  <div
+                    v-if="getRowNotes(row)"
+                    style="font-size: 12px; color: #a0a8a0; margin-top: 4px; overflow-wrap: break-word; word-break: break-word; line-height: 1.4"
+                  >
+                    {{ getRowNotes(row) }}
                   </div>
                 </div>
               </div>

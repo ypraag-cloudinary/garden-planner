@@ -173,6 +173,21 @@ async function save() {
   }
 }
 
+async function cancelEdit() {
+  frozenRow.value = true
+  editingProps.value = false
+  const data = await fetchSegments(props.rowId)
+  segments.value = data
+  if (row.value) {
+    localRow.value = {
+      length_m: row.value.length_m,
+      drip_spacing_cm: row.value.drip_spacing_cm,
+      has_trellis: row.value.has_trellis,
+      notes: row.value.notes,
+    }
+  }
+}
+
 async function markEmpty() {
   if (segments.value.length === 0) return
   if (!confirm('פעולה זו תסיר את כל השתילות מהערוגה. להמשיך?')) return
@@ -329,6 +344,42 @@ watch(() => props.rowId, load)
       </div>
     </div>
 
+    <!-- Quick actions -->
+    <div v-if="segments.length > 0" class="flex items-center justify-end gap-2">
+      <button
+        @click="markEmpty"
+        class="px-3 py-1.5 rounded-lg border border-soil-200 text-soil-500 text-sm font-medium hover:bg-soil-100 transition-colors duration-150 cursor-pointer"
+      >
+        סמן כריקה
+      </button>
+      <template v-if="frozenRow">
+        <button
+          @click="frozenRow = false"
+          class="px-3 py-1.5 rounded-lg border border-garden-200 bg-garden-50 text-garden-700 text-sm font-medium hover:bg-garden-100 transition-colors duration-150 cursor-pointer flex items-center gap-1.5"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+          עריכה
+        </button>
+      </template>
+      <template v-else>
+        <button
+          @click="cancelEdit"
+          class="px-3 py-1.5 rounded-lg border border-soil-200 text-soil-500 text-sm font-medium hover:bg-soil-100 transition-colors duration-150 cursor-pointer"
+        >
+          ביטול
+        </button>
+        <button
+          @click="save"
+          :disabled="saving || !canSave"
+          class="px-3 py-1.5 rounded-lg bg-garden-600 text-white text-sm font-medium hover:bg-garden-700 disabled:opacity-50 transition-colors duration-150 cursor-pointer"
+        >
+          {{ saving ? 'שומר...' : 'שמור שינויים' }}
+        </button>
+      </template>
+    </div>
+
     <!-- Segment bar overview -->
     <div class="px-1">
       <SegmentBar :segments="segments" :row-length="row.length_m" />
@@ -368,29 +419,6 @@ watch(() => props.rowId, load)
       <div class="text-sm">הערוגה ריקה — הוסף חלק כדי להתחיל לשתול</div>
     </div>
 
-    <!-- Unfreeze button (inline, when frozen) -->
-    <button
-      v-if="frozenRow && segments.length > 0"
-      @click="frozenRow = false"
-      class="w-full py-2.5 rounded-xl border border-garden-200 bg-garden-50 text-garden-700 text-sm font-medium hover:bg-garden-100 transition-colors duration-150 cursor-pointer flex items-center justify-center gap-2"
-    >
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-      </svg>
-      ערוך שתילה
-    </button>
-
-    <!-- Mark row as empty -->
-    <button
-      v-if="segments.length > 0"
-      @click="markEmpty"
-      class="w-full py-2.5 rounded-xl border border-soil-300 bg-soil-50 text-soil-600 text-sm font-medium hover:bg-soil-100 transition-colors duration-150 cursor-pointer flex items-center justify-center gap-2"
-    >
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-      </svg>
-      סמן כריקה
-    </button>
 
     <!-- History modal -->
     <Teleport to="body">
@@ -435,23 +463,13 @@ watch(() => props.rowId, load)
       </Transition>
     </Teleport>
 
-    <!-- Save button -->
-    <div class="sticky bottom-0 bg-soil-50/95 backdrop-blur-sm py-3 -mx-4 px-4 border-t border-soil-200">
-      <p
-        v-if="segments.length > 0 && totalAllocatedPct < 98 && !frozenRow"
-        class="text-xs text-danger-500 mb-2 text-center"
-      >
-        יש לחלק את כל אורך הערוגה לפני שמירה
-      </p>
-      <button
-        v-if="!frozenRow"
-        @click="save"
-        :disabled="saving || !canSave"
-        class="w-full py-3.5 rounded-xl bg-garden-600 text-white font-medium hover:bg-garden-700 active:scale-[0.99] disabled:opacity-50 transition-all duration-150 text-sm cursor-pointer"
-      >
-        {{ saving ? 'שומר...' : 'שמור שינויים' }}
-      </button>
-    </div>
+    <!-- Allocation warning -->
+    <p
+      v-if="segments.length > 0 && totalAllocatedPct < 98 && !frozenRow"
+      class="text-xs text-danger-500 text-center"
+    >
+      יש לחלק את כל אורך הערוגה לפני שמירה
+    </p>
   </div>
 </template>
 

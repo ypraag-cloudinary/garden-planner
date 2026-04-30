@@ -38,6 +38,12 @@ export interface Vegetable {
   days_to_harvest: number | null
 }
 
+export interface PipeMapping {
+  pipe_number: number
+  description: string
+  updated_at: string
+}
+
 export interface RowWithSegments extends GardenRow {
   segments: Segment[]
 }

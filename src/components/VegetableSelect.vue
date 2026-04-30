@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useVegetables } from '../composables/useVegetables'
 
 const props = defineProps<{
@@ -14,6 +14,7 @@ const { vegetables, fetchVegetables } = useVegetables()
 
 const isOpen = ref(false)
 const search = ref('')
+const searchInput = ref<HTMLInputElement | null>(null)
 
 const EMPTY_VEGETABLE = 'ריקה'
 
@@ -31,9 +32,11 @@ const selectedVeg = computed(() =>
   vegetables.value.find((v) => v.name === props.modelValue)
 )
 
-function open() {
+async function open() {
   search.value = ''
   isOpen.value = true
+  await nextTick()
+  searchInput.value?.focus()
 }
 
 function select(name: string) {
@@ -77,6 +80,7 @@ onMounted(fetchVegetables)
               >✕</button>
             </div>
             <input
+              ref="searchInput"
               v-model="search"
               type="text"
               placeholder="חיפוש..."
