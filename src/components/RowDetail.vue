@@ -27,6 +27,27 @@ const toast = ref<{ message: string; type: 'success' | 'error' } | null>(null)
 const editingProps = ref(false)
 const frozenRow = ref(false)
 
+const confirmDialog = ref<{ message: string; onConfirm: () => void } | null>(null)
+
+function requestConfirm(message: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    confirmDialog.value = {
+      message,
+      onConfirm: () => {
+        confirmDialog.value = null
+        resolve(true)
+      },
+    }
+    watch(confirmDialog, (v) => {
+      if (!v) resolve(false)
+    }, { once: true })
+  })
+}
+
+function dismissConfirm() {
+  confirmDialog.value = null
+}
+
 const row = computed(() => rows.value.find((r) => r.id === props.rowId))
 
 const localRow = ref<Partial<GardenRow>>({})
@@ -190,11 +211,12 @@ async function cancelEdit() {
 
 async function markEmpty() {
   if (segments.value.length === 0) return
-  if (!confirm('פעולה זו תסיר את כל השתילות מהערוגה. להמשיך?')) return
+  if (!(await requestConfirm('פעולה זו תסיר את כל השתילות מהערוגה. להמשיך?'))) return
   try {
-    await saveAllSegments(props.rowId, [])
+    await archiveRow(props.rowId)
     segments.value = []
     frozenRow.value = false
+    history.value = await fetchHistory(props.rowId)
     await fetchRows()
     showToast('הערוגה סומנה כריקה', 'success')
     emit('saved')
@@ -205,7 +227,7 @@ async function markEmpty() {
 
 async function doArchive() {
   if (segments.value.length === 0) return
-  if (!confirm('פעולה זו תאפס את כל השדות ותעביר את השתילה הנוכחית לארכיון. להמשיך?')) return
+  if (!(await requestConfirm('פעולה זו תאפס את כל השדות ותעביר את השתילה הנוכחית לארכיון. להמשיך?'))) return
   try {
     await archiveRow(props.rowId)
     segments.value = []
@@ -231,6 +253,8 @@ defineExpose({
   frozenRow,
   editingProps,
   archiving,
+  requestConfirm,
+  dismissConfirm,
 })
 
 onMounted(load)
@@ -346,12 +370,6 @@ watch(() => props.rowId, load)
 
     <!-- Quick actions -->
     <div v-if="segments.length > 0" class="flex items-center justify-end gap-2">
-      <button
-        @click="markEmpty"
-        class="px-3 py-1.5 rounded-lg border border-soil-200 text-soil-500 text-sm font-medium hover:bg-soil-100 transition-colors duration-150 cursor-pointer"
-      >
-        סמן כריקה
-      </button>
       <template v-if="frozenRow">
         <button
           @click="frozenRow = false"
@@ -457,6 +475,31 @@ watch(() => props.rowId, load)
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Confirm dialog -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div
+          v-if="confirmDialog"
+          class="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center"
+          @click.self="dismissConfirm"
+        >
+          <div class="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 space-y-4">
+            <p class="text-sm text-soil-700 text-center leading-relaxed">{{ confirmDialog.message }}</p>
+            <div class="flex gap-3">
+              <button
+                @click="dismissConfirm"
+                class="flex-1 py-2.5 rounded-xl border border-soil-200 text-soil-600 text-sm font-medium hover:bg-soil-50 transition-colors duration-150 cursor-pointer"
+              >ביטול</button>
+              <button
+                @click="confirmDialog.onConfirm()"
+                class="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors duration-150 cursor-pointer"
+              >אישור</button>
             </div>
           </div>
         </div>

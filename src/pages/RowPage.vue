@@ -40,16 +40,16 @@ function checkUnsavedChanges(): boolean {
   return !detail.frozenRow && (detail.segments?.length ?? 0) > 0
 }
 
-function goBack() {
+async function goBack() {
   if (checkUnsavedChanges()) {
-    if (!confirm('יש שינויים שלא נשמרו. לצאת בכל זאת?')) return
+    if (!(await detailRef.value!.requestConfirm('יש שינויים שלא נשמרו. לצאת בכל זאת?'))) return
   }
   router.push({ name: 'home' })
 }
 
-function goToRow(id: number) {
+async function goToRow(id: number) {
   if (checkUnsavedChanges()) {
-    if (!confirm('יש שינויים שלא נשמרו. לצאת בכל זאת?')) return
+    if (!(await detailRef.value!.requestConfirm('יש שינויים שלא נשמרו. לצאת בכל זאת?'))) return
   }
   router.push({ name: 'row', params: { id } })
 }
@@ -60,6 +60,10 @@ function handleArchive() {
 
 function handleHistory() {
   detailRef.value?.openHistory()
+}
+
+function handleMarkEmpty() {
+  detailRef.value?.markEmpty()
 }
 
 const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
@@ -99,6 +103,16 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
         </button>
       </div>
       <div class="flex items-center gap-1">
+        <button
+          v-if="hasSegments"
+          @click="handleMarkEmpty"
+          class="w-9 h-9 rounded-lg text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          title="סמן כריקה"
+        >
+          <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
         <button
           v-if="hasSegments"
           @click="handleArchive"
