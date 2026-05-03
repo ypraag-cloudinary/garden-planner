@@ -54,40 +54,41 @@ function cancelEdit() {
     <Transition name="pipemap">
       <div
         v-if="open"
-        class="fixed inset-0 z-50 bg-soil-900/85 flex flex-col"
+        class="fixed inset-0 z-50 bg-neutral/85 flex flex-col"
         @click.self="emit('close')"
       >
-        <div class="flex items-center justify-between px-4 py-3 bg-soil-900/60">
-          <span class="text-white/90 font-medium text-sm">מפת צנרת</span>
+        <div class="flex items-center justify-between px-4 py-3 bg-neutral/60">
+          <span class="text-neutral-content/90 font-medium text-sm">מפת צנרת</span>
           <div class="flex items-center gap-1.5">
             <template v-if="editing">
               <button
                 @click="save"
                 :disabled="saving"
-                class="px-4 h-10 rounded-xl bg-garden-600 text-white text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-garden-700 active:scale-95 cursor-pointer transition-all duration-150 disabled:opacity-50"
+                class="btn btn-primary btn-sm"
               >{{ saving ? 'שומר...' : 'שמור' }}</button>
               <button
                 @click="cancelEdit"
                 :disabled="saving"
-                class="px-4 h-10 rounded-xl bg-white/15 text-white text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/25 active:scale-95 cursor-pointer transition-all duration-150"
+                class="btn btn-ghost btn-sm text-neutral-content"
               >ביטול</button>
             </template>
             <button
               v-else
               @click="editing = true"
-              class="px-4 h-10 rounded-xl bg-white/15 text-white text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/25 active:scale-95 cursor-pointer transition-all duration-150"
+              class="btn btn-ghost btn-sm text-neutral-content"
               title="עריכה"
             >✏️ עריכה</button>
             <button
               @click="emit('close')"
-              class="w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 mr-1 cursor-pointer transition-all duration-150"
+              class="btn btn-ghost btn-square btn-sm text-neutral-content mr-1"
             >✕</button>
           </div>
         </div>
 
         <div class="flex-1 overflow-auto flex justify-center p-4" dir="rtl">
-          <div v-if="loading" class="text-white/80 text-sm mt-20 animate-pulse">
-            טוען מיפוי צנרת...
+          <div v-if="loading" class="text-neutral-content/80 text-sm mt-20">
+            <span class="loading loading-dots loading-md"></span>
+            <div>טוען מיפוי צנרת...</div>
           </div>
 
           <div v-else class="w-full max-w-md space-y-3 pt-2">
@@ -105,7 +106,7 @@ function cancelEdit() {
                   <input
                     v-model="editValues[pipe.pipe_number]"
                     type="text"
-                    class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/30 transition-colors"
+                    class="input input-bordered input-sm w-full bg-white/10 border-white/20 text-white placeholder-white/30"
                     placeholder="תיאור אזור..."
                     dir="rtl"
                   />

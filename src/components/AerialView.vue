@@ -59,28 +59,16 @@ function onPointerUp() {
     <Transition name="aerial">
       <div
         v-if="open"
-        class="fixed inset-0 z-50 bg-soil-900/85 flex flex-col"
+        class="fixed inset-0 z-50 bg-neutral/85 flex flex-col"
         @click.self="emit('close')"
       >
-        <div class="flex items-center justify-between px-4 py-3 bg-soil-900/60">
-          <span class="text-white/90 font-medium text-sm">מבט אווירי על הגינה</span>
+        <div class="flex items-center justify-between px-4 py-3 bg-neutral/60">
+          <span class="text-neutral-content/90 font-medium text-sm">מבט אווירי על הגינה</span>
           <div class="flex items-center gap-1.5">
-            <button
-              @click="zoomOut"
-              class="w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 cursor-pointer transition-all duration-150 text-lg"
-            >−</button>
-            <button
-              @click="resetView"
-              class="px-3 h-10 rounded-xl bg-white/15 text-white text-xs font-medium flex items-center justify-center hover:bg-white/25 cursor-pointer transition-all duration-150 tabular-nums"
-            >{{ Math.round(scale * 100) }}%</button>
-            <button
-              @click="zoomIn"
-              class="w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 cursor-pointer transition-all duration-150 text-lg"
-            >+</button>
-            <button
-              @click="emit('close')"
-              class="w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 mr-1 cursor-pointer transition-all duration-150"
-            >✕</button>
+            <button @click="zoomOut" class="btn btn-ghost btn-square btn-sm text-neutral-content text-lg">−</button>
+            <button @click="resetView" class="btn btn-ghost btn-sm text-neutral-content text-xs tabular-nums">{{ Math.round(scale * 100) }}%</button>
+            <button @click="zoomIn" class="btn btn-ghost btn-square btn-sm text-neutral-content text-lg">+</button>
+            <button @click="emit('close')" class="btn btn-ghost btn-square btn-sm text-neutral-content mr-1">✕</button>
           </div>
         </div>
         <div
