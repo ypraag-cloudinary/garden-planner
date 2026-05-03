@@ -17,9 +17,34 @@ const search = ref('')
 const searchInput = ref<HTMLInputElement | null>(null)
 
 const EMPTY_VEGETABLE = 'ריקה'
+const RECENT_KEY = 'gina-recent-vegetables'
+const MAX_RECENT = 5
+
+const recentNames = ref<string[]>(loadRecent())
+
+function loadRecent(): string[] {
+  try {
+    const stored = localStorage.getItem(RECENT_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+function saveRecent(name: string) {
+  const list = [name, ...recentNames.value.filter((n) => n !== name)].slice(0, MAX_RECENT)
+  recentNames.value = list
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)) } catch {}
+}
 
 const selectable = computed(() =>
   vegetables.value.filter((v) => v.name !== EMPTY_VEGETABLE)
+)
+
+const recentVegetables = computed(() =>
+  recentNames.value
+    .map((name) => vegetables.value.find((v) => v.name === name))
+    .filter((v): v is NonNullable<typeof v> => !!v && v.name !== EMPTY_VEGETABLE)
 )
 
 const filtered = computed(() => {
@@ -40,28 +65,50 @@ async function open() {
 }
 
 function select(name: string) {
+  saveRecent(name)
   emit('update:modelValue', name)
   isOpen.value = false
+}
+
+function quickSelect(name: string) {
+  saveRecent(name)
+  emit('update:modelValue', name)
 }
 
 onMounted(fetchVegetables)
 </script>
 
 <template>
-  <button
-    type="button"
-    @click="open"
-    class="btn btn-outline w-full justify-start gap-2 font-normal"
-  >
-    <template v-if="modelValue">
-      <span v-if="selectedVeg?.icon" class="text-base">{{ selectedVeg.icon }}</span>
-      <span class="text-base-content">{{ modelValue }}</span>
-    </template>
-    <span v-else class="text-base-content/40">בחר ירק...</span>
-    <svg class="w-4 h-4 text-base-content/40 mr-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
-  </button>
+  <div class="space-y-2">
+    <button
+      type="button"
+      @click="open"
+      class="btn btn-outline w-full justify-start gap-2 font-normal"
+    >
+      <template v-if="modelValue">
+        <span v-if="selectedVeg?.icon" class="text-base">{{ selectedVeg.icon }}</span>
+        <span class="text-base-content">{{ modelValue }}</span>
+      </template>
+      <span v-else class="text-base-content/40">בחר ירק...</span>
+      <svg class="w-4 h-4 text-base-content/40 mr-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    <!-- Quick picks (recent vegetables) -->
+    <div v-if="recentVegetables.length > 0 && !modelValue" class="flex flex-wrap gap-1.5">
+      <button
+        v-for="veg in recentVegetables"
+        :key="veg.id"
+        type="button"
+        @click="quickSelect(veg.name)"
+        class="badge badge-outline badge-sm gap-1 cursor-pointer hover:badge-primary transition-colors py-2.5"
+      >
+        <span v-if="veg.icon" class="text-xs">{{ veg.icon }}</span>
+        <span>{{ veg.name }}</span>
+      </button>
+    </div>
+  </div>
 
   <Teleport to="body">
     <Transition name="sheet">
@@ -98,7 +145,12 @@ onMounted(fetchVegetables)
                   :class="modelValue === veg.name ? 'active' : ''"
                 >
                   <span class="text-xl leading-none shrink-0">{{ veg.icon || '🌱' }}</span>
-                  <span class="text-sm">{{ veg.name }}</span>
+                  <div class="flex flex-col items-start">
+                    <span class="text-sm">{{ veg.name }}</span>
+                    <span v-if="veg.days_to_harvest" class="text-[11px] text-base-content/40">
+                      {{ veg.days_to_harvest }} ימים לקטיף
+                    </span>
+                  </div>
                 </button>
               </li>
             </div>

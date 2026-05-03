@@ -22,10 +22,12 @@ const { archiving, archiveRow, fetchHistory } = useArchive()
 const segments = ref<Segment[]>([])
 const history = ref<SegmentHistory[]>([])
 const showHistory = ref(false)
+const showRowSettings = ref(false)
 const loading = ref(true)
 const toast = ref<{ message: string; type: 'success' | 'error' } | null>(null)
 const editingProps = ref(false)
 const frozenRow = ref(false)
+const expandedSegment = ref(0)
 
 const confirmDialog = ref<{ message: string; onConfirm: () => void } | null>(null)
 
@@ -134,6 +136,34 @@ async function openHistory() {
   }
 }
 
+function openRowSettings() {
+  if (row.value) {
+    localRow.value = {
+      length_m: row.value.length_m,
+      drip_spacing_cm: row.value.drip_spacing_cm,
+      has_trellis: row.value.has_trellis,
+      notes: row.value.notes,
+    }
+  }
+  showRowSettings.value = true
+}
+
+async function saveRowSettings() {
+  if (!row.value) return
+  try {
+    await updateRow(props.rowId, {
+      length_m: localRow.value.length_m,
+      drip_spacing_cm: localRow.value.drip_spacing_cm,
+      has_trellis: localRow.value.has_trellis,
+      notes: localRow.value.notes,
+    })
+    showRowSettings.value = false
+    showToast('הגדרות ערוגה נשמרו', 'success')
+  } catch {
+    showToast('שגיאה בשמירת הגדרות', 'error')
+  }
+}
+
 function addSegment() {
   if (!canAddSegment.value || !row.value) return
   const remainingM = Math.round(remainingFraction.value * row.value.length_m * 10) / 10
@@ -149,11 +179,19 @@ function addSegment() {
     updated_at: new Date().toISOString(),
   }
   segments.value.push(newSeg)
+  expandedSegment.value = segments.value.length - 1
 }
 
 function removeSegment(index: number) {
   segments.value.splice(index, 1)
   segments.value.forEach((s, i) => { s.position = i + 1 })
+  if (expandedSegment.value >= segments.value.length) {
+    expandedSegment.value = Math.max(0, segments.value.length - 1)
+  }
+}
+
+function toggleSegment(index: number) {
+  expandedSegment.value = expandedSegment.value === index ? -1 : index
 }
 
 function updateSegment(index: number, updated: Segment) {
@@ -170,16 +208,6 @@ async function save() {
   try {
     const valid = segments.value.filter((s) => s.vegetable.trim())
     valid.forEach((s, i) => { s.position = i + 1 })
-
-    if (editingProps.value && row.value) {
-      await updateRow(props.rowId, {
-        length_m: localRow.value.length_m,
-        drip_spacing_cm: localRow.value.drip_spacing_cm,
-        has_trellis: localRow.value.has_trellis,
-        notes: localRow.value.notes,
-      })
-      editingProps.value = false
-    }
 
     await saveAllSegments(props.rowId, valid)
     const freshSegments = await fetchSegments(props.rowId)
@@ -248,6 +276,7 @@ function formatDate(dateStr: string) {
 defineExpose({
   doArchive,
   openHistory,
+  openRowSettings,
   markEmpty,
   segments,
   frozenRow,
@@ -278,121 +307,54 @@ watch(() => props.rowId, load)
       </Transition>
     </Teleport>
 
-    <!-- Row Properties -->
-    <div class="card bg-base-100 border border-base-300">
-      <div class="card-body p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-semibold text-base-content">פרטי ערוגה</h3>
-          <button
-            type="button"
-            @click="editingProps = !editingProps"
-            class="btn btn-ghost btn-xs text-primary"
-          >
-            {{ editingProps ? 'סגור' : 'ערוך' }}
-          </button>
-        </div>
-
-        <div v-if="!editingProps" class="flex flex-wrap gap-2 text-sm">
-          <span class="badge badge-neutral badge-outline">{{ row.length_m }} מ׳</span>
-          <span class="badge badge-neutral badge-outline">טפטוף כל {{ row.drip_spacing_cm }} ס״מ</span>
-          <span v-if="row.has_trellis" class="badge badge-warning badge-outline">קיימת הדליה</span>
-        </div>
-
-        <div v-else class="space-y-4">
-          <div>
-            <label class="label text-xs font-medium">אורך ערוגה</label>
-            <div class="join w-full">
-              <button
-                type="button"
-                @click="localRow.length_m = 5"
-                class="btn join-item flex-1"
-                :class="localRow.length_m === 5 ? 'btn-primary' : 'btn-outline'"
-              >5 מ׳</button>
-              <button
-                type="button"
-                @click="localRow.length_m = 10"
-                class="btn join-item flex-1"
-                :class="localRow.length_m === 10 ? 'btn-primary' : 'btn-outline'"
-              >10 מ׳</button>
-            </div>
-          </div>
-
-          <div>
-            <label class="label text-xs font-medium">מרחק טפטוף</label>
-            <div class="join w-full">
-              <button
-                type="button"
-                @click="localRow.drip_spacing_cm = 20"
-                class="btn join-item flex-1"
-                :class="localRow.drip_spacing_cm === 20 ? 'btn-primary' : 'btn-outline'"
-              >20 ס״מ</button>
-              <button
-                type="button"
-                @click="localRow.drip_spacing_cm = 30"
-                class="btn join-item flex-1"
-                :class="localRow.drip_spacing_cm === 30 ? 'btn-primary' : 'btn-outline'"
-              >30 ס״מ</button>
-            </div>
-          </div>
-
-          <div>
-            <label class="flex items-center gap-2.5 cursor-pointer py-1">
-              <input
-                type="checkbox"
-                :checked="localRow.has_trellis"
-                @change="localRow.has_trellis = ($event.target as HTMLInputElement).checked"
-                class="checkbox checkbox-primary checkbox-sm"
-              />
-              <span class="text-sm text-base-content/80">עמודי הדליה</span>
-            </label>
-          </div>
-
-          <div>
-            <label class="label text-xs font-medium">הערות ערוגה</label>
-            <textarea
-              v-model="localRow.notes"
-              rows="2"
-              class="textarea textarea-bordered w-full resize-none"
-              placeholder="הערות..."
-            />
-          </div>
-        </div>
-      </div>
+    <!-- Row Properties (read-only info strip) -->
+    <div class="flex flex-wrap items-center gap-2 text-sm px-1">
+      <span class="badge badge-neutral badge-outline">{{ row.length_m }} מ׳</span>
+      <span class="badge badge-neutral badge-outline">טפטוף כל {{ row.drip_spacing_cm }} ס״מ</span>
+      <span v-if="row.has_trellis" class="badge badge-warning badge-outline">הדליה</span>
+      <span v-if="row.notes" class="badge badge-neutral badge-outline badge-sm truncate max-w-[10rem]">{{ row.notes }}</span>
     </div>
 
-    <!-- Quick actions -->
-    <div v-if="segments.length > 0" class="flex items-center justify-end gap-2">
-      <template v-if="frozenRow">
-        <button
-          @click="frozenRow = false"
-          class="btn btn-outline btn-primary btn-sm gap-1.5"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-          עריכה
-        </button>
-      </template>
-      <template v-else>
-        <button
-          @click="cancelEdit"
-          class="btn btn-ghost btn-sm"
-        >
-          ביטול
-        </button>
-        <button
-          @click="save"
-          :disabled="saving || !canSave"
-          class="btn btn-primary btn-sm"
-        >
-          {{ saving ? 'שומר...' : 'שמור שינויים' }}
-        </button>
-      </template>
+    <!-- Edit trigger (shown only when row is frozen/saved) -->
+    <div v-if="segments.length > 0 && frozenRow" class="flex items-center justify-end">
+      <button
+        @click="frozenRow = false"
+        class="btn btn-outline btn-primary btn-sm gap-1.5"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        עריכה
+      </button>
     </div>
 
     <!-- Segment bar overview -->
     <div class="px-1">
-      <SegmentBar :segments="segments" :row-length="row.length_m" />
+      <SegmentBar :segments="segments" :row-length="row.length_m" @select-segment="toggleSegment" />
+    </div>
+
+    <!-- Allocation/validation status (shown in edit mode) -->
+    <div v-if="segments.length > 0 && !frozenRow" class="flex items-center gap-3 px-1 text-xs">
+      <span
+        class="flex items-center gap-1"
+        :class="totalAllocatedPct >= 98 ? 'text-success' : 'text-base-content/50'"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path v-if="totalAllocatedPct >= 98" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          <path v-else stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01" />
+        </svg>
+        {{ totalAllocatedPct }}% מוקצה
+      </span>
+      <span
+        class="flex items-center gap-1"
+        :class="allVegetablesSelected ? 'text-success' : 'text-base-content/50'"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path v-if="allVegetablesSelected" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          <path v-else stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01" />
+        </svg>
+        {{ allVegetablesSelected ? 'כל הירקות נבחרו' : 'חסר בחירת ירק' }}
+      </span>
     </div>
 
     <!-- Segments -->
@@ -405,8 +367,10 @@ watch(() => props.rowId, load)
         :row-length="row.length_m"
         :remaining-pct="remainingPctForSegment(i)"
         :readonly="frozenRow"
+        :expanded="segments.length === 1 || expandedSegment === i"
         @update:segment="updateSegment(i, $event)"
         @remove="removeSegment(i)"
+        @toggle="toggleSegment(i)"
       />
     </div>
 
@@ -472,6 +436,97 @@ watch(() => props.rowId, load)
       </Transition>
     </Teleport>
 
+    <!-- Row Settings bottom-sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div
+          v-if="showRowSettings"
+          class="modal modal-open modal-bottom sm:modal-middle"
+          @click.self="showRowSettings = false"
+        >
+          <div class="modal-box max-w-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-base-content text-lg">הגדרות ערוגה</h3>
+              <button
+                @click="showRowSettings = false"
+                class="btn btn-ghost btn-circle btn-sm"
+              >✕</button>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="label text-xs font-medium">אורך ערוגה</label>
+                <div class="join w-full">
+                  <button
+                    type="button"
+                    @click="localRow.length_m = 5"
+                    class="btn join-item flex-1"
+                    :class="localRow.length_m === 5 ? 'btn-primary' : 'btn-outline'"
+                  >5 מ׳</button>
+                  <button
+                    type="button"
+                    @click="localRow.length_m = 10"
+                    class="btn join-item flex-1"
+                    :class="localRow.length_m === 10 ? 'btn-primary' : 'btn-outline'"
+                  >10 מ׳</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="label text-xs font-medium">מרחק טפטוף</label>
+                <div class="join w-full">
+                  <button
+                    type="button"
+                    @click="localRow.drip_spacing_cm = 20"
+                    class="btn join-item flex-1"
+                    :class="localRow.drip_spacing_cm === 20 ? 'btn-primary' : 'btn-outline'"
+                  >20 ס״מ</button>
+                  <button
+                    type="button"
+                    @click="localRow.drip_spacing_cm = 30"
+                    class="btn join-item flex-1"
+                    :class="localRow.drip_spacing_cm === 30 ? 'btn-primary' : 'btn-outline'"
+                  >30 ס״מ</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2.5 cursor-pointer py-1">
+                  <input
+                    type="checkbox"
+                    :checked="localRow.has_trellis"
+                    @change="localRow.has_trellis = ($event.target as HTMLInputElement).checked"
+                    class="checkbox checkbox-primary checkbox-sm"
+                  />
+                  <span class="text-sm text-base-content/80">עמודי הדליה</span>
+                </label>
+              </div>
+
+              <div>
+                <label class="label text-xs font-medium">הערות ערוגה</label>
+                <textarea
+                  v-model="localRow.notes"
+                  rows="2"
+                  class="textarea textarea-bordered w-full resize-none"
+                  placeholder="הערות..."
+                />
+              </div>
+            </div>
+            <div class="modal-action">
+              <button
+                @click="showRowSettings = false"
+                class="btn btn-ghost flex-1"
+              >ביטול</button>
+              <button
+                @click="saveRowSettings"
+                class="btn btn-primary flex-1"
+              >שמור</button>
+            </div>
+          </div>
+          <div class="modal-backdrop" @click="showRowSettings = false"></div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Confirm dialog -->
     <Teleport to="body">
       <Transition name="sheet">
@@ -498,17 +553,41 @@ watch(() => props.rowId, load)
       </Transition>
     </Teleport>
 
-    <!-- Allocation warning -->
-    <p
-      v-if="segments.length > 0 && totalAllocatedPct < 98 && !frozenRow"
-      class="text-xs text-error text-center"
-    >
-      יש לחלק את כל אורך הערוגה לפני שמירה
-    </p>
+    <!-- Bottom spacer when sticky bar is visible -->
+    <div v-if="!frozenRow && segments.length > 0" class="h-20" />
+
+    <!-- Sticky bottom save bar -->
+    <Teleport to="body">
+      <Transition name="bottom-bar">
+        <div
+          v-if="!frozenRow && segments.length > 0"
+          class="fixed bottom-0 inset-x-0 z-40 bg-base-100/95 backdrop-blur-sm border-t border-base-300 px-4 py-3 safe-bottom"
+        >
+          <div class="max-w-lg mx-auto flex items-center gap-3">
+            <button
+              @click="cancelEdit"
+              class="btn btn-ghost flex-1"
+            >
+              ביטול
+            </button>
+            <button
+              @click="save"
+              :disabled="saving || !canSave"
+              class="btn btn-primary flex-1"
+            >
+              {{ saving ? 'שומר...' : 'שמור' }}
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
+.safe-bottom {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+}
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -517,6 +596,17 @@ watch(() => props.rowId, load)
 .toast-leave-to {
   opacity: 0;
   transform: translate(-50%, -0.75rem);
+}
+.bottom-bar-enter-active {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+.bottom-bar-leave-active {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.bottom-bar-enter-from,
+.bottom-bar-leave-to {
+  opacity: 0;
+  transform: translateY(100%);
 }
 .sheet-enter-active {
   transition: opacity 0.2s ease;
