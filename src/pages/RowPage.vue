@@ -12,6 +12,7 @@ const router = useRouter()
 const { rows } = useRows()
 const rowId = computed(() => parseInt(props.id, 10))
 const detailRef = ref<InstanceType<typeof RowDetail> | null>(null)
+const showOverflow = ref(false)
 
 const sortedRowIds = computed(() => rows.value.map((r) => r.id).sort((a, b) => a - b))
 
@@ -55,15 +56,23 @@ async function goToRow(id: number) {
 }
 
 function handleArchive() {
+  showOverflow.value = false
   detailRef.value?.doArchive()
 }
 
 function handleHistory() {
+  showOverflow.value = false
   detailRef.value?.openHistory()
 }
 
 function handleMarkEmpty() {
+  showOverflow.value = false
   detailRef.value?.markEmpty()
+}
+
+function handleRowSettings() {
+  showOverflow.value = false
+  detailRef.value?.openRowSettings()
 }
 
 const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
@@ -71,10 +80,10 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
 
 <template>
   <div class="min-h-screen">
-    <div class="sticky top-14 z-20 bg-soil-50/95 backdrop-blur-sm border-b border-soil-200 px-4 py-3 flex items-center justify-between">
+    <div class="sticky top-14 z-20 bg-base-200/95 backdrop-blur-sm border-b border-base-300 px-4 py-3 flex items-center justify-between">
       <button
         @click="goBack"
-        class="flex items-center gap-1.5 text-garden-600 hover:text-garden-700 text-sm font-medium cursor-pointer py-1 -my-1 transition-colors duration-150"
+        class="btn btn-ghost btn-sm gap-1.5 text-primary"
       >
         <svg class="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -84,17 +93,17 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
       <div class="flex items-center gap-1">
         <button
           @click="goToRow(prevRowId)"
-          class="w-8 h-8 rounded-lg text-soil-500 hover:bg-soil-100 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          class="btn btn-ghost btn-square btn-sm"
           title="ערוגה קודמת"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-        <h1 class="text-base font-semibold text-soil-800 min-w-[4.5rem] text-center">ערוגה {{ rowId }}</h1>
+        <h1 class="text-base font-semibold text-base-content min-w-[4.5rem] text-center">ערוגה {{ rowId }}</h1>
         <button
           @click="goToRow(nextRowId)"
-          class="w-8 h-8 rounded-lg text-soil-500 hover:bg-soil-100 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          class="btn btn-ghost btn-square btn-sm"
           title="ערוגה הבאה"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -102,41 +111,103 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
           </svg>
         </button>
       </div>
-      <div class="flex items-center gap-1">
-        <button
-          v-if="hasSegments"
-          @click="handleMarkEmpty"
-          class="w-9 h-9 rounded-lg text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors duration-150 cursor-pointer"
-          title="סמן כריקה"
-        >
-          <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-        <button
-          v-if="hasSegments"
-          @click="handleArchive"
-          class="w-9 h-9 rounded-lg text-harvest-600 hover:bg-harvest-50 flex items-center justify-center transition-colors duration-150 cursor-pointer"
-          title="העבר לארכיון"
-        >
-          <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-          </svg>
-        </button>
-        <button
-          @click="handleHistory"
-          class="w-9 h-9 rounded-lg text-soil-500 hover:bg-soil-100 flex items-center justify-center transition-colors duration-150 cursor-pointer"
-          title="היסטוריה"
-        >
-          <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </button>
-      </div>
+      <button
+        @click="showOverflow = true"
+        class="btn btn-ghost btn-square btn-sm"
+        title="אפשרויות נוספות"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01" />
+        </svg>
+      </button>
     </div>
 
     <div class="p-4">
       <RowDetail ref="detailRef" :row-id="rowId" @saved="onSaved" />
     </div>
+
+    <!-- Overflow bottom-sheet menu -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div
+          v-if="showOverflow"
+          class="modal modal-open modal-bottom sm:modal-middle"
+          @click.self="showOverflow = false"
+        >
+          <div class="modal-box max-w-sm p-0">
+            <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+              <h3 class="font-semibold text-base-content text-sm">אפשרויות</h3>
+              <button
+                @click="showOverflow = false"
+                class="btn btn-ghost btn-circle btn-sm"
+              >✕</button>
+            </div>
+            <ul class="menu w-full px-2 pb-3">
+              <li>
+                <button @click="handleHistory" class="flex items-center gap-3 py-3">
+                  <svg class="w-5 h-5 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>היסטוריית שתילה</span>
+                </button>
+              </li>
+              <li>
+                <button @click="handleRowSettings" class="flex items-center gap-3 py-3">
+                  <svg class="w-5 h-5 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>הגדרות ערוגה</span>
+                </button>
+              </li>
+              <li v-if="hasSegments" class="border-t border-base-200 mt-1 pt-1">
+                <button @click="handleArchive" class="flex items-center gap-3 py-3 text-secondary">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                  </svg>
+                  <span>העבר לארכיון</span>
+                </button>
+              </li>
+              <li v-if="hasSegments">
+                <button @click="handleMarkEmpty" class="flex items-center gap-3 py-3 text-error">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>סמן כריקה</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div class="modal-backdrop" @click="showOverflow = false"></div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
+
+<style scoped>
+.sheet-enter-active {
+  transition: opacity 0.2s ease;
+}
+.sheet-enter-active > div {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sheet-leave-active {
+  transition: opacity 0.15s ease;
+}
+.sheet-leave-active > div {
+  transition: transform 0.15s ease;
+}
+.sheet-enter-from {
+  opacity: 0;
+}
+.sheet-enter-from > div {
+  transform: translateY(100%);
+}
+.sheet-leave-to {
+  opacity: 0;
+}
+.sheet-leave-to > div {
+  transform: translateY(100%);
+}
+</style>

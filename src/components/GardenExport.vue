@@ -145,32 +145,33 @@ watch(() => props.open, async (isOpen) => {
     <Transition name="export">
       <div
         v-if="open"
-        class="fixed inset-0 z-50 bg-soil-900/85 flex flex-col"
+        class="fixed inset-0 z-50 bg-neutral/85 flex flex-col"
         @click.self="handleClose"
       >
-        <div class="flex items-center justify-between px-4 py-3 bg-soil-900/60">
-          <span class="text-white/90 font-medium text-sm">ייצוא מפת גינה</span>
+        <div class="flex items-center justify-between px-4 py-3 bg-neutral/60">
+          <span class="text-neutral-content/90 font-medium text-sm">ייצוא מפת גינה</span>
           <div class="flex items-center gap-1.5">
             <button
               v-if="previewUrl && canShare"
               @click="shareImage"
-              class="px-4 h-10 rounded-xl bg-white/15 text-white text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/25 active:scale-95 cursor-pointer transition-all duration-150"
+              class="btn btn-ghost btn-sm text-neutral-content"
             >שיתוף</button>
             <button
               v-if="previewUrl"
               @click="downloadImage"
-              class="px-4 h-10 rounded-xl bg-white/15 text-white text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/25 active:scale-95 cursor-pointer transition-all duration-150"
+              class="btn btn-ghost btn-sm text-neutral-content"
             >הורדה</button>
             <button
               @click="handleClose"
-              class="w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 mr-1 cursor-pointer transition-all duration-150"
+              class="btn btn-ghost btn-square btn-sm text-neutral-content mr-1"
             >✕</button>
           </div>
         </div>
 
         <div class="flex-1 overflow-auto flex items-start justify-center p-4">
-          <div v-if="generating" class="text-white/80 text-sm mt-20 animate-pulse">
-            יוצר תמונה...
+          <div v-if="generating" class="text-neutral-content/80 text-sm mt-20">
+            <span class="loading loading-dots loading-md"></span>
+            <div>יוצר תמונה...</div>
           </div>
 
           <img

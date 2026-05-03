@@ -32,9 +32,9 @@ export function useVegetables() {
 
   function getVegetableColor(name: string): string {
     const palette = [
-      '#4a7c59', '#8b6914', '#c17817', '#2d6a4f', '#6b8e23',
-      '#a0522d', '#d4a017', '#228b6e', '#7b8a56', '#b5651d',
-      '#3a7d44', '#c4956a', '#5f8575', '#9caf88', '#8fbc8f',
+      '#7ca88a', '#b89e5c', '#c9a46a', '#6a9e82', '#9aad6e',
+      '#b8937a', '#c4ac5e', '#6aab96', '#9ba37a', '#c0996e',
+      '#79a678', '#cbb492', '#88a898', '#afc09e', '#a5c8a5',
     ]
     let hash = 0
     for (let i = 0; i < name.length; i++) {

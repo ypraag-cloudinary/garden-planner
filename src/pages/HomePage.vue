@@ -11,19 +11,19 @@ onMounted(fetchRows)
 <template>
   <div class="pb-8">
     <div v-if="loading" class="flex items-center justify-center py-20">
-      <div class="text-center text-soil-400">
-        <div class="text-3xl mb-3 animate-pulse">🌱</div>
-        <div class="text-sm font-medium">טוען ערוגות...</div>
+      <div class="text-center text-base-content/50">
+        <span class="loading loading-dots loading-lg text-primary"></span>
+        <div class="text-sm font-medium mt-2">טוען ערוגות...</div>
       </div>
     </div>
 
     <div v-else-if="error" class="p-6 text-center">
-      <div class="bg-danger-50 border border-danger-100 rounded-xl p-4 text-danger-600 text-sm">
-        {{ error }}
+      <div role="alert" class="alert alert-error">
+        <span>{{ error }}</span>
       </div>
       <button
         @click="fetchRows"
-        class="mt-3 px-5 py-2.5 rounded-lg bg-danger-100 text-danger-600 text-sm font-medium hover:bg-danger-50 transition-colors duration-150 cursor-pointer"
+        class="btn btn-error btn-outline btn-sm mt-3"
       >
         נסה שוב
       </button>

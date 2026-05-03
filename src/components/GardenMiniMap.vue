@@ -37,7 +37,7 @@ watch(() => props.activeRowId, () => {
 </script>
 
 <template>
-  <div class="fixed bottom-4 left-4 z-20 bg-white/92 backdrop-blur-sm rounded-xl border border-soil-200 shadow-md p-1.5 max-h-[130px] overflow-y-auto" dir="ltr" ref="scrollContainer">
+  <div class="fixed bottom-4 left-4 z-20 bg-base-100/92 backdrop-blur-sm rounded-xl border border-base-300 shadow-md p-1.5 max-h-[130px] overflow-y-auto" dir="ltr" ref="scrollContainer">
     <div class="flex gap-1">
       <div class="flex flex-col gap-px">
         <button
@@ -48,10 +48,10 @@ watch(() => props.activeRowId, () => {
           class="w-6 h-5 rounded text-[8px] font-bold flex items-center justify-center transition-colors duration-150 cursor-pointer leading-none shrink-0 tabular-nums"
           :class="[
             row.id === activeRowId
-              ? 'bg-garden-500 text-white ring-2 ring-garden-300 ring-offset-1'
+              ? 'bg-primary text-primary-content ring-2 ring-primary/30 ring-offset-1'
               : hasPlanting(row.id)
-                ? 'bg-garden-200 text-garden-800 hover:bg-garden-300'
-                : 'bg-soil-200 text-soil-500 hover:bg-soil-300'
+                ? 'bg-primary/20 text-primary hover:bg-primary/30'
+                : 'bg-base-300 text-base-content/50 hover:bg-base-300/80'
           ]"
         >{{ row.id }}</button>
       </div>
@@ -64,10 +64,10 @@ watch(() => props.activeRowId, () => {
           class="w-6 h-5 rounded text-[8px] font-bold flex items-center justify-center transition-colors duration-150 cursor-pointer leading-none shrink-0 tabular-nums"
           :class="[
             row.id === activeRowId
-              ? 'bg-garden-500 text-white ring-2 ring-garden-300 ring-offset-1'
+              ? 'bg-primary text-primary-content ring-2 ring-primary/30 ring-offset-1'
               : hasPlanting(row.id)
-                ? 'bg-garden-200 text-garden-800 hover:bg-garden-300'
-                : 'bg-soil-200 text-soil-500 hover:bg-soil-300'
+                ? 'bg-primary/20 text-primary hover:bg-primary/30'
+                : 'bg-base-300 text-base-content/50 hover:bg-base-300/80'
           ]"
         >{{ row.id }}</button>
       </div>

@@ -10,27 +10,36 @@ const props = withDefaults(defineProps<{
   rowLength: number
   remainingPct: number
   readonly: boolean
+  expanded: boolean
 }>(), {
   remainingPct: 100,
   readonly: false,
+  expanded: true,
 })
 
 const emit = defineEmits<{
   'update:segment': [segment: Segment]
   remove: []
+  toggle: []
 }>()
 
-const { getVegetableColor } = useVegetables()
+const { getVegetableColor, vegetables } = useVegetables()
 
 const EMPTY_VEGETABLE = 'ריקה'
 
 const editingDate = ref(false)
+const showNotes = ref(!!props.segment.notes)
 
 const isEmpty = computed(() => props.segment.vegetable === EMPTY_VEGETABLE)
 
 const accentColor = computed(() => {
   if (isEmpty.value) return '#d4d0c8'
   return props.segment.vegetable ? getVegetableColor(props.segment.vegetable) : '#c5c0b8'
+})
+
+const vegIcon = computed(() => {
+  if (!props.segment.vegetable) return null
+  return vegetables.value.find((v) => v.name === props.segment.vegetable)?.icon ?? null
 })
 
 const daysSincePlanting = computed(() => {
@@ -42,6 +51,16 @@ const daysSincePlanting = computed(() => {
 const formattedDate = computed(() => {
   if (!props.segment.planted_at) return 'לא הוגדר'
   return new Date(props.segment.planted_at).toLocaleDateString('he-IL')
+})
+
+const fractionLabel = computed(() => {
+  if (!props.segment.length_m || !props.rowLength) return ''
+  const ratio = props.segment.length_m / props.rowLength
+  if (Math.abs(ratio - 1) < 0.05) return 'הכל'
+  if (Math.abs(ratio - 0.66) < 0.05) return '2/3'
+  if (Math.abs(ratio - 0.5) < 0.05) return '1/2'
+  if (Math.abs(ratio - 0.33) < 0.05) return '1/3'
+  return `${props.segment.length_m} מ׳`
 })
 
 type LengthFraction = 0.33 | 0.5 | 0.66 | 1
@@ -85,11 +104,11 @@ function update(field: keyof Segment, value: unknown) {
   emit('update:segment', { ...props.segment, [field]: value })
 }
 
-function toggleEmpty(checked: boolean) {
-  if (checked) {
-    emit('update:segment', { ...props.segment, vegetable: EMPTY_VEGETABLE })
-  } else {
+function toggleEmpty() {
+  if (isEmpty.value) {
     emit('update:segment', { ...props.segment, vegetable: '' })
+  } else {
+    emit('update:segment', { ...props.segment, vegetable: EMPTY_VEGETABLE })
   }
 }
 
@@ -102,121 +121,155 @@ function setFraction(fraction: LengthFraction) {
 
 <template>
   <div
-    class="rounded-xl border bg-white overflow-hidden"
+    class="card bg-base-100 border overflow-hidden transition-all duration-200"
     :class="[
       readonly ? 'opacity-70' : '',
-      isEmpty ? 'border-soil-100 bg-soil-50/50' : 'border-soil-200',
+      isEmpty ? 'border-base-200 bg-base-200/50' : 'border-base-300',
     ]"
   >
-    <div class="h-1" :style="{ backgroundColor: accentColor }" />
-    <div class="p-4 space-y-3.5" :class="{ 'pointer-events-none': readonly }">
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-semibold" :class="isEmpty ? 'text-soil-400' : 'text-soil-600'">
-          {{ isEmpty ? 'חלק ריק' : `חלק ${index + 1}` }}
-        </span>
-        <div class="flex items-center gap-2">
-          <span
-            v-if="daysSincePlanting !== null"
-            class="text-xs font-medium px-2 py-0.5 rounded-full tabular-nums"
-            :style="{ backgroundColor: accentColor + '18', color: accentColor }"
-          >
-            {{ daysSincePlanting }} ימים
-          </span>
-          <button
-            v-if="!readonly"
-            type="button"
-            @click="emit('remove')"
-            class="text-soil-400 hover:text-danger-600 text-xs px-2 py-1.5 rounded-lg hover:bg-danger-50 transition-colors duration-150 cursor-pointer flex items-center gap-1"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            הסר
-          </button>
-        </div>
-      </div>
+    <div class="h-1" :style="{ backgroundColor: accentColor + 'aa' }" />
 
+    <!-- Compact header (always visible, tappable for accordion) -->
+    <div
+      class="flex items-center gap-2.5 px-4 py-3 cursor-pointer"
+      @click="emit('toggle')"
+    >
+      <span v-if="vegIcon" class="text-lg leading-none shrink-0">{{ vegIcon }}</span>
+      <span v-else class="w-5 h-5 rounded-full shrink-0" :style="{ backgroundColor: accentColor + 'aa' }" />
+      <div class="flex-1 min-w-0">
+        <span class="text-sm font-medium text-base-content truncate block">
+          {{ isEmpty ? 'חלק ריק' : (segment.vegetable || `חלק ${index + 1}`) }}
+        </span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span v-if="fractionLabel" class="text-xs text-base-content/50">{{ fractionLabel }}</span>
+        <span
+          v-if="daysSincePlanting !== null"
+          class="badge badge-sm tabular-nums"
+          :style="{ backgroundColor: accentColor + '14', color: accentColor + 'cc' }"
+        >{{ daysSincePlanting }}d</span>
+        <svg
+          class="w-4 h-4 text-base-content/30 transition-transform duration-200"
+          :class="{ 'rotate-180': expanded }"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Expanded content -->
+    <div
+      v-show="expanded"
+      class="px-4 pb-4 space-y-3"
+      :class="{ 'pointer-events-none': readonly }"
+    >
+      <!-- Vegetable selection -->
       <div>
-        <label v-if="!readonly" class="flex items-center gap-2 mb-2 cursor-pointer">
-          <input
-            type="checkbox"
-            :checked="isEmpty"
-            @change="toggleEmpty(($event.target as HTMLInputElement).checked)"
-            class="w-4 h-4 rounded border-soil-300 text-soil-500 focus:ring-soil-400"
-          />
-          <span class="text-xs font-medium text-soil-500">חלק ריק</span>
-        </label>
+        <div class="flex items-center gap-2 mb-2">
+          <template v-if="!readonly">
+            <button
+              type="button"
+              @click="toggleEmpty"
+              class="badge badge-sm cursor-pointer"
+              :class="isEmpty ? 'badge-neutral' : 'badge-ghost badge-outline'"
+            >{{ isEmpty ? 'ריקה ✓' : 'סמן ריק' }}</button>
+          </template>
+        </div>
         <template v-if="!isEmpty">
-          <label class="block text-xs font-medium text-soil-500 mb-1.5">ירק <span class="text-danger-500">*</span></label>
           <VegetableSelect
             :model-value="segment.vegetable"
             @update:model-value="update('vegetable', $event)"
           />
-          <p v-if="!segment.vegetable" class="text-xs text-danger-500 mt-1">חובה לבחור ירק</p>
+          <p v-if="!segment.vegetable" class="text-xs text-error mt-1">חובה לבחור ירק</p>
         </template>
       </div>
 
-      <div v-if="!isEmpty">
-        <label class="block text-xs font-medium text-soil-500 mb-1.5">תאריך שתילה</label>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-soil-800">{{ formattedDate }}</span>
+      <!-- Planting date (inline) -->
+      <div v-if="!isEmpty" class="flex items-center gap-2 text-sm">
+        <span class="text-xs text-base-content/50">שתילה:</span>
+        <span class="text-base-content">{{ formattedDate }}</span>
+        <button
+          v-if="!editingDate && !readonly"
+          type="button"
+          @click="editingDate = true"
+          class="btn btn-ghost btn-xs btn-circle text-primary"
+        >
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </button>
+        <template v-if="editingDate && !readonly">
+          <input
+            type="date"
+            :value="segment.planted_at ?? ''"
+            @input="update('planted_at', ($event.target as HTMLInputElement).value || null); editingDate = false"
+            class="input input-bordered input-xs"
+          />
           <button
-            v-if="!editingDate && !readonly"
             type="button"
-            @click="editingDate = true"
-            class="text-garden-600 hover:text-garden-700 cursor-pointer p-1.5 rounded-lg hover:bg-garden-50 transition-colors duration-150"
-            title="שנה תאריך"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-          </button>
-          <template v-if="editingDate && !readonly">
-            <input
-              type="date"
-              :value="segment.planted_at ?? ''"
-              @input="update('planted_at', ($event.target as HTMLInputElement).value || null); editingDate = false"
-              class="rounded-lg border border-soil-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-garden-500"
-            />
-            <button
-              type="button"
-              @click="editingDate = false"
-              class="text-xs text-soil-400 hover:text-soil-600 cursor-pointer py-1 px-2 rounded-lg hover:bg-soil-100 transition-colors duration-150"
-            >ביטול</button>
-          </template>
-        </div>
+            @click="editingDate = false"
+            class="btn btn-ghost btn-xs"
+          >✕</button>
+        </template>
       </div>
 
+      <!-- Length fractions -->
       <div>
-        <label class="block text-xs font-medium text-soil-500 mb-1.5">אורך</label>
-        <div class="flex gap-2">
+        <div class="join w-full">
           <button
             v-for="frac in availableFractions"
             :key="frac.value"
             type="button"
             @click="setFraction(frac.value)"
             :disabled="isFractionDisabled(frac.value)"
-            class="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all duration-150"
+            class="btn join-item flex-1 btn-sm"
             :class="[
               isFractionDisabled(frac.value)
-                ? 'border-soil-100 bg-soil-50 text-soil-300 cursor-not-allowed'
+                ? 'btn-disabled'
                 : currentFraction === frac.value
-                  ? 'border-garden-500 bg-garden-50 text-garden-700 cursor-pointer'
-                  : 'border-soil-200 bg-white text-soil-600 hover:border-soil-300 hover:bg-soil-50 cursor-pointer'
+                  ? 'btn-primary'
+                  : 'btn-outline'
             ]"
           >{{ frac.label }}</button>
         </div>
       </div>
 
+      <!-- Notes (collapsed by default) -->
       <div>
-        <label class="block text-xs font-medium text-soil-500 mb-1.5">הערות</label>
+        <button
+          v-if="!showNotes && !readonly"
+          type="button"
+          @click="showNotes = true"
+          class="btn btn-ghost btn-xs text-base-content/50 gap-1 px-0"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          הוסף הערה
+        </button>
         <textarea
+          v-if="showNotes || segment.notes"
           :value="segment.notes ?? ''"
           @input="update('notes', ($event.target as HTMLTextAreaElement).value || null)"
           rows="2"
-          class="w-full rounded-lg border border-soil-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-garden-500 resize-none placeholder:text-soil-300"
+          class="textarea textarea-bordered w-full resize-none text-sm"
           placeholder="הערות..."
         />
+      </div>
+
+      <!-- Remove action -->
+      <div v-if="!readonly" class="flex justify-end">
+        <button
+          type="button"
+          @click="emit('remove')"
+          class="btn btn-ghost btn-xs text-error gap-1"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          הסר חלק
+        </button>
       </div>
     </div>
   </div>

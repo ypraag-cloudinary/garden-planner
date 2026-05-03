@@ -30,32 +30,34 @@ const daysSincePlanting = computed(() => {
 <template>
   <router-link
     :to="{ name: 'row', params: { id: row.id } }"
-    class="block bg-white rounded-xl border border-soil-200 p-4 hover:border-soil-300 active:bg-soil-50 transition-all duration-150 no-underline text-inherit"
+    class="card bg-base-100 border border-base-300 hover:border-neutral/30 active:bg-base-200 transition-all duration-150 no-underline text-inherit"
   >
-    <div class="flex items-start justify-between mb-2.5">
-      <div class="flex items-center gap-2.5">
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-garden-100 text-garden-700 font-bold text-sm tabular-nums">
-          {{ row.id }}
-        </span>
-        <div>
-          <div class="font-medium text-soil-800 text-sm flex items-center gap-1.5">
-            {{ vegetableNames }}
-            <span
-              v-if="row.has_trellis"
-              class="inline-block text-[10px] bg-harvest-50 text-harvest-700 border border-harvest-200 px-1.5 py-0 rounded font-normal leading-relaxed"
-            >הדליה</span>
-          </div>
-          <div class="text-xs text-soil-400 mt-0.5">
-            {{ row.length_m }} מ׳
-            · טפטוף כל {{ row.drip_spacing_cm }} ס״מ
-            · {{ row.segments.length }} {{ row.segments.length === 1 ? 'חלק' : 'חלקים' }}
+    <div class="card-body p-4 gap-2.5">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary font-bold text-sm tabular-nums">
+            {{ row.id }}
+          </span>
+          <div>
+            <div class="font-medium text-base-content text-sm flex items-center gap-1.5">
+              {{ vegetableNames }}
+              <span
+                v-if="row.has_trellis"
+                class="badge badge-warning badge-xs"
+              >הדליה</span>
+            </div>
+            <div class="text-xs text-base-content/50 mt-0.5">
+              {{ row.length_m }} מ׳
+              · טפטוף כל {{ row.drip_spacing_cm }} ס״מ
+              · {{ row.segments.length }} {{ row.segments.length === 1 ? 'חלק' : 'חלקים' }}
+            </div>
           </div>
         </div>
+        <div v-if="daysSincePlanting !== null" class="badge badge-primary badge-outline badge-sm tabular-nums">
+          {{ daysSincePlanting }} ימים
+        </div>
       </div>
-      <div v-if="daysSincePlanting !== null" class="text-xs font-medium text-garden-700 bg-garden-50 px-2 py-0.5 rounded-full whitespace-nowrap tabular-nums">
-        {{ daysSincePlanting }} ימים
-      </div>
+      <SegmentBar :segments="row.segments" :row-length="row.length_m" />
     </div>
-    <SegmentBar :segments="row.segments" :row-length="row.length_m" />
   </router-link>
 </template>

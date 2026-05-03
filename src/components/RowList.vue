@@ -14,7 +14,7 @@ const rightRows = computed(() => props.rows.filter((r) => r.section === 'right')
 <template>
   <div class="space-y-8 md:grid md:grid-cols-2 md:gap-8 md:space-y-0" style="direction: ltr">
     <section dir="rtl">
-      <h2 class="text-xs font-semibold text-soil-400 uppercase tracking-widest px-4 mb-3">
+      <h2 class="text-xs font-semibold text-base-content/40 uppercase tracking-widest px-4 mb-3">
         צד שמאל · ערוגות 1–13
       </h2>
       <div class="space-y-2.5 px-4">
@@ -23,7 +23,7 @@ const rightRows = computed(() => props.rows.filter((r) => r.section === 'right')
     </section>
 
     <section dir="rtl">
-      <h2 class="text-xs font-semibold text-soil-400 uppercase tracking-widest px-4 mb-3">
+      <h2 class="text-xs font-semibold text-base-content/40 uppercase tracking-widest px-4 mb-3">
         צד ימין · ערוגות 14–27
       </h2>
       <div class="space-y-2.5 px-4">

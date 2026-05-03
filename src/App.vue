@@ -31,21 +31,21 @@ const activeRowId = computed(() => {
       <template #header-right>
         <button
           @click="showExport = true"
-          class="w-10 h-10 rounded-lg bg-garden-50 text-garden-700 flex items-center justify-center hover:bg-garden-100 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
+          class="btn btn-ghost btn-square btn-sm text-base"
           title="ייצוא מפת גינה"
         >
           📤
         </button>
         <button
           @click="showAerial = true"
-          class="w-10 h-10 rounded-lg bg-garden-50 text-garden-700 flex items-center justify-center hover:bg-garden-100 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
+          class="btn btn-ghost btn-square btn-sm text-base"
           title="מבט אווירי"
         >
           📷
         </button>
         <button
           @click="showPipeMap = true"
-          class="w-10 h-10 rounded-lg bg-garden-50 text-garden-700 flex items-center justify-center hover:bg-garden-100 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
+          class="btn btn-ghost btn-square btn-sm text-base"
           title="מפת צנרת"
         >
           💧

@@ -25,49 +25,51 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-soil-50 flex items-center justify-center px-4" dir="rtl">
+  <div class="min-h-screen bg-base-200 flex items-center justify-center px-4" dir="rtl">
     <form
       @submit.prevent="handleSubmit"
-      class="w-full max-w-xs bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-5"
+      class="card bg-base-100 shadow-lg w-full max-w-xs"
     >
-      <div class="text-center">
-        <span class="text-4xl">🌱</span>
-        <h1 class="text-xl font-semibold text-garden-700 mt-2">גינה קהילתית</h1>
+      <div class="card-body gap-5">
+        <div class="text-center">
+          <span class="text-4xl">🌱</span>
+          <h1 class="text-xl font-semibold text-primary mt-2">גינה קהילתית</h1>
+        </div>
+
+        <label class="flex flex-col gap-1.5">
+          <span class="text-sm font-medium text-base-content/70">אימייל</span>
+          <input
+            v-model="email"
+            type="email"
+            required
+            autocomplete="email"
+            dir="ltr"
+            class="input input-bordered w-full"
+          />
+        </label>
+
+        <label class="flex flex-col gap-1.5">
+          <span class="text-sm font-medium text-base-content/70">סיסמה</span>
+          <input
+            v-model="password"
+            type="password"
+            required
+            autocomplete="current-password"
+            dir="ltr"
+            class="input input-bordered w-full"
+          />
+        </label>
+
+        <p v-if="error" class="text-sm text-error text-center">{{ error }}</p>
+
+        <button
+          type="submit"
+          :disabled="submitting"
+          class="btn btn-primary w-full"
+        >
+          {{ submitting ? '...' : 'התחברות' }}
+        </button>
       </div>
-
-      <label class="flex flex-col gap-1.5">
-        <span class="text-sm font-medium text-soil-600">אימייל</span>
-        <input
-          v-model="email"
-          type="email"
-          required
-          autocomplete="email"
-          dir="ltr"
-          class="h-11 rounded-lg border border-soil-200 px-3 text-sm bg-soil-50 focus:outline-none focus:ring-2 focus:ring-garden-300 transition"
-        />
-      </label>
-
-      <label class="flex flex-col gap-1.5">
-        <span class="text-sm font-medium text-soil-600">סיסמה</span>
-        <input
-          v-model="password"
-          type="password"
-          required
-          autocomplete="current-password"
-          dir="ltr"
-          class="h-11 rounded-lg border border-soil-200 px-3 text-sm bg-soil-50 focus:outline-none focus:ring-2 focus:ring-garden-300 transition"
-        />
-      </label>
-
-      <p v-if="error" class="text-sm text-danger-600 text-center">{{ error }}</p>
-
-      <button
-        type="submit"
-        :disabled="submitting"
-        class="h-11 rounded-lg bg-garden-600 text-white font-medium text-sm hover:bg-garden-700 active:scale-[0.98] transition-all duration-150 disabled:opacity-50 cursor-pointer"
-      >
-        {{ submitting ? '...' : 'התחברות' }}
-      </button>
     </form>
   </div>
 </template>
