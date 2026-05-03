@@ -33,7 +33,7 @@ const bars = computed(() => {
 </script>
 
 <template>
-  <div class="flex h-2 rounded-full overflow-hidden bg-soil-200 gap-px" v-if="bars.length > 0">
+  <div class="flex h-2 rounded-full overflow-hidden bg-base-300 gap-px" v-if="bars.length > 0">
     <div
       v-for="bar in bars"
       :key="bar.id"
@@ -42,5 +42,5 @@ const bars = computed(() => {
       :title="bar.vegetable"
     />
   </div>
-  <div v-else class="h-2 rounded-full bg-soil-100 border border-dashed border-soil-300" />
+  <div v-else class="h-2 rounded-full bg-base-200 border border-dashed border-base-300" />
 </template>

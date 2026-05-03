@@ -12,10 +12,10 @@ async function handleLogout() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-soil-50">
-    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-soil-200">
-      <div class="max-w-lg md:max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-        <router-link to="/" class="flex items-center gap-2.5 text-garden-700 font-semibold text-base no-underline tracking-tight">
+  <div class="min-h-screen bg-base-200">
+    <header class="navbar sticky top-0 z-30 bg-base-100/95 backdrop-blur-sm border-b border-base-300">
+      <div class="max-w-lg md:max-w-3xl mx-auto px-4 w-full flex items-center justify-between">
+        <router-link to="/" class="flex items-center gap-2.5 text-primary font-semibold text-base no-underline tracking-tight">
           <span class="text-xl">🌱</span>
           <span>גינה קהילתית</span>
         </router-link>
@@ -23,7 +23,7 @@ async function handleLogout() {
           <slot name="header-right" />
           <button
             @click="handleLogout"
-            class="w-10 h-10 rounded-lg bg-soil-50 text-soil-500 flex items-center justify-center hover:bg-soil-100 hover:text-soil-700 active:scale-[0.97] transition-all duration-150 cursor-pointer text-base"
+            class="btn btn-ghost btn-square btn-sm text-base"
             title="התנתק"
           >
             ⏻

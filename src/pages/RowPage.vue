@@ -71,10 +71,10 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
 
 <template>
   <div class="min-h-screen">
-    <div class="sticky top-14 z-20 bg-soil-50/95 backdrop-blur-sm border-b border-soil-200 px-4 py-3 flex items-center justify-between">
+    <div class="sticky top-14 z-20 bg-base-200/95 backdrop-blur-sm border-b border-base-300 px-4 py-3 flex items-center justify-between">
       <button
         @click="goBack"
-        class="flex items-center gap-1.5 text-garden-600 hover:text-garden-700 text-sm font-medium cursor-pointer py-1 -my-1 transition-colors duration-150"
+        class="btn btn-ghost btn-sm gap-1.5 text-primary"
       >
         <svg class="w-4 h-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -84,17 +84,17 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
       <div class="flex items-center gap-1">
         <button
           @click="goToRow(prevRowId)"
-          class="w-8 h-8 rounded-lg text-soil-500 hover:bg-soil-100 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          class="btn btn-ghost btn-square btn-sm"
           title="ערוגה קודמת"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-        <h1 class="text-base font-semibold text-soil-800 min-w-[4.5rem] text-center">ערוגה {{ rowId }}</h1>
+        <h1 class="text-base font-semibold text-base-content min-w-[4.5rem] text-center">ערוגה {{ rowId }}</h1>
         <button
           @click="goToRow(nextRowId)"
-          class="w-8 h-8 rounded-lg text-soil-500 hover:bg-soil-100 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          class="btn btn-ghost btn-square btn-sm"
           title="ערוגה הבאה"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -106,7 +106,7 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
         <button
           v-if="hasSegments"
           @click="handleMarkEmpty"
-          class="w-9 h-9 rounded-lg text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          class="btn btn-ghost btn-square btn-sm text-error"
           title="סמן כריקה"
         >
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -116,7 +116,7 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
         <button
           v-if="hasSegments"
           @click="handleArchive"
-          class="w-9 h-9 rounded-lg text-harvest-600 hover:bg-harvest-50 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          class="btn btn-ghost btn-square btn-sm text-secondary"
           title="העבר לארכיון"
         >
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -125,7 +125,7 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
         </button>
         <button
           @click="handleHistory"
-          class="w-9 h-9 rounded-lg text-soil-500 hover:bg-soil-100 flex items-center justify-center transition-colors duration-150 cursor-pointer"
+          class="btn btn-ghost btn-square btn-sm"
           title="היסטוריה"
         >
           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
