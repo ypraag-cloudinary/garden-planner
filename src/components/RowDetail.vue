@@ -263,107 +263,99 @@ watch(() => props.rowId, load)
 </script>
 
 <template>
-  <div v-if="loading" class="p-8 text-center text-soil-400">
-    <div class="text-2xl mb-2 animate-pulse">🌱</div>
-    <div class="text-sm font-medium">טוען...</div>
+  <div v-if="loading" class="p-8 text-center text-base-content/50">
+    <span class="loading loading-dots loading-lg text-primary"></span>
+    <div class="text-sm font-medium mt-2">טוען...</div>
   </div>
   <div v-else-if="row" class="space-y-4">
     <Teleport to="body">
       <Transition name="toast">
-        <div
-          v-if="toast"
-          class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-xl text-sm font-medium shadow-lg"
-          :class="toast.type === 'success' ? 'bg-garden-600 text-white' : 'bg-danger-600 text-white'"
-        >
-          {{ toast.message }}
+        <div v-if="toast" class="toast toast-top toast-center z-50">
+          <div class="alert" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
+            <span>{{ toast.message }}</span>
+          </div>
         </div>
       </Transition>
     </Teleport>
 
     <!-- Row Properties -->
-    <div class="bg-white rounded-xl border border-soil-200 p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="font-semibold text-soil-800">פרטי ערוגה</h3>
-        <button
-          type="button"
-          @click="editingProps = !editingProps"
-          class="text-xs font-medium text-garden-600 hover:text-garden-700 cursor-pointer py-1 px-2 rounded-lg hover:bg-garden-50 transition-colors duration-150"
-        >
-          {{ editingProps ? 'סגור' : 'ערוך' }}
-        </button>
-      </div>
-
-      <div v-if="!editingProps" class="flex flex-wrap gap-2 text-sm text-soil-600">
-        <span class="bg-soil-100 px-2.5 py-1 rounded-lg">{{ row.length_m }} מ׳</span>
-        <span class="bg-soil-100 px-2.5 py-1 rounded-lg">טפטוף כל {{ row.drip_spacing_cm }} ס״מ</span>
-        <span v-if="row.has_trellis" class="bg-harvest-50 text-harvest-700 border border-harvest-200 px-2.5 py-1 rounded-lg">קיימת הדליה</span>
-      </div>
-
-      <div v-else class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-soil-500 mb-2">אורך ערוגה</label>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              @click="localRow.length_m = 5"
-              class="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all duration-150 cursor-pointer"
-              :class="localRow.length_m === 5
-                ? 'border-garden-500 bg-garden-50 text-garden-700'
-                : 'border-soil-200 bg-white text-soil-600 hover:border-soil-300 hover:bg-soil-50'"
-            >5 מ׳</button>
-            <button
-              type="button"
-              @click="localRow.length_m = 10"
-              class="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all duration-150 cursor-pointer"
-              :class="localRow.length_m === 10
-                ? 'border-garden-500 bg-garden-50 text-garden-700'
-                : 'border-soil-200 bg-white text-soil-600 hover:border-soil-300 hover:bg-soil-50'"
-            >10 מ׳</button>
-          </div>
+    <div class="card bg-base-100 border border-base-300">
+      <div class="card-body p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-base-content">פרטי ערוגה</h3>
+          <button
+            type="button"
+            @click="editingProps = !editingProps"
+            class="btn btn-ghost btn-xs text-primary"
+          >
+            {{ editingProps ? 'סגור' : 'ערוך' }}
+          </button>
         </div>
 
-        <div>
-          <label class="block text-xs font-medium text-soil-500 mb-2">מרחק טפטוף</label>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              @click="localRow.drip_spacing_cm = 20"
-              class="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all duration-150 cursor-pointer"
-              :class="localRow.drip_spacing_cm === 20
-                ? 'border-garden-500 bg-garden-50 text-garden-700'
-                : 'border-soil-200 bg-white text-soil-600 hover:border-soil-300 hover:bg-soil-50'"
-            >20 ס״מ</button>
-            <button
-              type="button"
-              @click="localRow.drip_spacing_cm = 30"
-              class="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all duration-150 cursor-pointer"
-              :class="localRow.drip_spacing_cm === 30
-                ? 'border-garden-500 bg-garden-50 text-garden-700'
-                : 'border-soil-200 bg-white text-soil-600 hover:border-soil-300 hover:bg-soil-50'"
-            >30 ס״מ</button>
-          </div>
+        <div v-if="!editingProps" class="flex flex-wrap gap-2 text-sm">
+          <span class="badge badge-neutral badge-outline">{{ row.length_m }} מ׳</span>
+          <span class="badge badge-neutral badge-outline">טפטוף כל {{ row.drip_spacing_cm }} ס״מ</span>
+          <span v-if="row.has_trellis" class="badge badge-warning badge-outline">קיימת הדליה</span>
         </div>
 
-        <div>
-          <label class="flex items-center gap-2.5 cursor-pointer py-1">
-            <input
-              type="checkbox"
-              :checked="localRow.has_trellis"
-              @change="localRow.has_trellis = ($event.target as HTMLInputElement).checked"
-              class="w-4.5 h-4.5 rounded border-soil-300 text-garden-600 focus:ring-garden-500"
+        <div v-else class="space-y-4">
+          <div>
+            <label class="label text-xs font-medium">אורך ערוגה</label>
+            <div class="join w-full">
+              <button
+                type="button"
+                @click="localRow.length_m = 5"
+                class="btn join-item flex-1"
+                :class="localRow.length_m === 5 ? 'btn-primary' : 'btn-outline'"
+              >5 מ׳</button>
+              <button
+                type="button"
+                @click="localRow.length_m = 10"
+                class="btn join-item flex-1"
+                :class="localRow.length_m === 10 ? 'btn-primary' : 'btn-outline'"
+              >10 מ׳</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="label text-xs font-medium">מרחק טפטוף</label>
+            <div class="join w-full">
+              <button
+                type="button"
+                @click="localRow.drip_spacing_cm = 20"
+                class="btn join-item flex-1"
+                :class="localRow.drip_spacing_cm === 20 ? 'btn-primary' : 'btn-outline'"
+              >20 ס״מ</button>
+              <button
+                type="button"
+                @click="localRow.drip_spacing_cm = 30"
+                class="btn join-item flex-1"
+                :class="localRow.drip_spacing_cm === 30 ? 'btn-primary' : 'btn-outline'"
+              >30 ס״מ</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="flex items-center gap-2.5 cursor-pointer py-1">
+              <input
+                type="checkbox"
+                :checked="localRow.has_trellis"
+                @change="localRow.has_trellis = ($event.target as HTMLInputElement).checked"
+                class="checkbox checkbox-primary checkbox-sm"
+              />
+              <span class="text-sm text-base-content/80">עמודי הדליה</span>
+            </label>
+          </div>
+
+          <div>
+            <label class="label text-xs font-medium">הערות ערוגה</label>
+            <textarea
+              v-model="localRow.notes"
+              rows="2"
+              class="textarea textarea-bordered w-full resize-none"
+              placeholder="הערות..."
             />
-            <span class="text-sm text-soil-700">עמודי הדליה</span>
-          </label>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-soil-500 mb-1.5">הערות ערוגה</label>
-          <textarea
-            v-model="localRow.notes"
-            rows="2"
-            class="w-full rounded-lg border border-soil-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-garden-500 resize-none placeholder:text-soil-300"
-            placeholder="הערות..."
-          />
+          </div>
         </div>
       </div>
     </div>
@@ -373,7 +365,7 @@ watch(() => props.rowId, load)
       <template v-if="frozenRow">
         <button
           @click="frozenRow = false"
-          class="px-3 py-1.5 rounded-lg border border-garden-200 bg-garden-50 text-garden-700 text-sm font-medium hover:bg-garden-100 transition-colors duration-150 cursor-pointer flex items-center gap-1.5"
+          class="btn btn-outline btn-primary btn-sm gap-1.5"
         >
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -384,14 +376,14 @@ watch(() => props.rowId, load)
       <template v-else>
         <button
           @click="cancelEdit"
-          class="px-3 py-1.5 rounded-lg border border-soil-200 text-soil-500 text-sm font-medium hover:bg-soil-100 transition-colors duration-150 cursor-pointer"
+          class="btn btn-ghost btn-sm"
         >
           ביטול
         </button>
         <button
           @click="save"
           :disabled="saving || !canSave"
-          class="px-3 py-1.5 rounded-lg bg-garden-600 text-white text-sm font-medium hover:bg-garden-700 disabled:opacity-50 transition-colors duration-150 cursor-pointer"
+          class="btn btn-primary btn-sm"
         >
           {{ saving ? 'שומר...' : 'שמור שינויים' }}
         </button>
@@ -424,15 +416,13 @@ watch(() => props.rowId, load)
       type="button"
       @click="addSegment"
       :disabled="!canAddSegment"
-      class="w-full py-3.5 rounded-xl border border-dashed text-sm font-medium transition-all duration-150 cursor-pointer"
-      :class="canAddSegment
-        ? 'border-soil-300 text-soil-500 hover:border-garden-400 hover:text-garden-600 hover:bg-garden-50/50'
-        : 'border-soil-200 text-soil-300 cursor-not-allowed'"
+      class="btn btn-outline btn-block border-dashed"
+      :class="canAddSegment ? 'btn-primary' : 'btn-disabled'"
     >
       + הוסף חלק
     </button>
 
-    <div v-if="segments.length === 0" class="text-center py-10 text-soil-400">
+    <div v-if="segments.length === 0" class="text-center py-10 text-base-content/40">
       <div class="text-3xl mb-2">🌱</div>
       <div class="text-sm">הערוגה ריקה — הוסף חלק כדי להתחיל לשתול</div>
     </div>
@@ -443,32 +433,32 @@ watch(() => props.rowId, load)
       <Transition name="sheet">
         <div
           v-if="showHistory"
-          class="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center"
+          class="modal modal-open modal-bottom sm:modal-middle"
           @click.self="showHistory = false"
         >
-          <div class="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col overflow-hidden">
-            <div class="px-4 pt-4 pb-3 border-b border-soil-100 flex items-center justify-between">
-              <h3 class="font-semibold text-soil-800">היסטוריית שתילה</h3>
+          <div class="modal-box max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-base-content text-lg">היסטוריית שתילה</h3>
               <button
                 @click="showHistory = false"
-                class="w-9 h-9 rounded-full hover:bg-soil-100 flex items-center justify-center text-soil-500 cursor-pointer transition-colors duration-150"
+                class="btn btn-ghost btn-circle btn-sm"
               >✕</button>
             </div>
             <div class="flex-1 overflow-y-auto">
-              <div v-if="groupedHistory.length === 0" class="p-8 text-center text-soil-400 text-sm">
+              <div v-if="groupedHistory.length === 0" class="p-8 text-center text-base-content/40 text-sm">
                 אין היסטוריה לערוגה זו
               </div>
-              <div v-else class="divide-y divide-soil-100">
-                <div v-for="group in groupedHistory" :key="group.date" class="p-4">
-                  <div class="text-xs text-soil-400 mb-2">ארכיון מ־{{ formatDate(group.date) }}</div>
+              <div v-else class="divide-y divide-base-200">
+                <div v-for="group in groupedHistory" :key="group.date" class="py-4">
+                  <div class="text-xs text-base-content/40 mb-2">ארכיון מ־{{ formatDate(group.date) }}</div>
                   <div class="flex flex-wrap gap-2">
                     <div
                       v-for="item in group.items"
                       :key="item.id"
-                      class="bg-soil-50 rounded-lg px-3 py-1.5 text-sm"
+                      class="badge badge-lg badge-neutral badge-outline gap-1"
                     >
-                      <span class="font-medium text-soil-700">{{ item.vegetable }}</span>
-                      <span v-if="item.planted_at" class="text-soil-400 text-xs mr-1">
+                      <span class="font-medium">{{ item.vegetable }}</span>
+                      <span v-if="item.planted_at" class="text-xs opacity-60">
                         ({{ formatDate(item.planted_at) }})
                       </span>
                     </div>
@@ -477,6 +467,7 @@ watch(() => props.rowId, load)
               </div>
             </div>
           </div>
+          <div class="modal-backdrop" @click="showHistory = false"></div>
         </div>
       </Transition>
     </Teleport>
@@ -486,22 +477,23 @@ watch(() => props.rowId, load)
       <Transition name="sheet">
         <div
           v-if="confirmDialog"
-          class="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center"
+          class="modal modal-open modal-bottom sm:modal-middle"
           @click.self="dismissConfirm"
         >
-          <div class="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 space-y-4">
-            <p class="text-sm text-soil-700 text-center leading-relaxed">{{ confirmDialog.message }}</p>
-            <div class="flex gap-3">
+          <div class="modal-box max-w-sm">
+            <p class="text-sm text-base-content/80 text-center leading-relaxed">{{ confirmDialog.message }}</p>
+            <div class="modal-action justify-center">
               <button
                 @click="dismissConfirm"
-                class="flex-1 py-2.5 rounded-xl border border-soil-200 text-soil-600 text-sm font-medium hover:bg-soil-50 transition-colors duration-150 cursor-pointer"
+                class="btn btn-ghost flex-1"
               >ביטול</button>
               <button
                 @click="confirmDialog.onConfirm()"
-                class="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors duration-150 cursor-pointer"
+                class="btn btn-error flex-1"
               >אישור</button>
             </div>
           </div>
+          <div class="modal-backdrop" @click="dismissConfirm"></div>
         </div>
       </Transition>
     </Teleport>
@@ -509,7 +501,7 @@ watch(() => props.rowId, load)
     <!-- Allocation warning -->
     <p
       v-if="segments.length > 0 && totalAllocatedPct < 98 && !frozenRow"
-      class="text-xs text-danger-500 text-center"
+      class="text-xs text-error text-center"
     >
       יש לחלק את כל אורך הערוגה לפני שמירה
     </p>

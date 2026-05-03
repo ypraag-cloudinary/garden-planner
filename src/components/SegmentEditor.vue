@@ -102,22 +102,22 @@ function setFraction(fraction: LengthFraction) {
 
 <template>
   <div
-    class="rounded-xl border bg-white overflow-hidden"
+    class="card bg-base-100 border overflow-hidden"
     :class="[
       readonly ? 'opacity-70' : '',
-      isEmpty ? 'border-soil-100 bg-soil-50/50' : 'border-soil-200',
+      isEmpty ? 'border-base-200 bg-base-200/50' : 'border-base-300',
     ]"
   >
     <div class="h-1" :style="{ backgroundColor: accentColor }" />
-    <div class="p-4 space-y-3.5" :class="{ 'pointer-events-none': readonly }">
+    <div class="card-body p-4 gap-3.5" :class="{ 'pointer-events-none': readonly }">
       <div class="flex items-center justify-between">
-        <span class="text-sm font-semibold" :class="isEmpty ? 'text-soil-400' : 'text-soil-600'">
+        <span class="text-sm font-semibold" :class="isEmpty ? 'text-base-content/40' : 'text-base-content/70'">
           {{ isEmpty ? 'חלק ריק' : `חלק ${index + 1}` }}
         </span>
         <div class="flex items-center gap-2">
           <span
             v-if="daysSincePlanting !== null"
-            class="text-xs font-medium px-2 py-0.5 rounded-full tabular-nums"
+            class="badge badge-sm tabular-nums"
             :style="{ backgroundColor: accentColor + '18', color: accentColor }"
           >
             {{ daysSincePlanting }} ימים
@@ -126,7 +126,7 @@ function setFraction(fraction: LengthFraction) {
             v-if="!readonly"
             type="button"
             @click="emit('remove')"
-            class="text-soil-400 hover:text-danger-600 text-xs px-2 py-1.5 rounded-lg hover:bg-danger-50 transition-colors duration-150 cursor-pointer flex items-center gap-1"
+            class="btn btn-ghost btn-xs text-error gap-1"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -142,29 +142,29 @@ function setFraction(fraction: LengthFraction) {
             type="checkbox"
             :checked="isEmpty"
             @change="toggleEmpty(($event.target as HTMLInputElement).checked)"
-            class="w-4 h-4 rounded border-soil-300 text-soil-500 focus:ring-soil-400"
+            class="checkbox checkbox-sm"
           />
-          <span class="text-xs font-medium text-soil-500">חלק ריק</span>
+          <span class="text-xs font-medium text-base-content/60">חלק ריק</span>
         </label>
         <template v-if="!isEmpty">
-          <label class="block text-xs font-medium text-soil-500 mb-1.5">ירק <span class="text-danger-500">*</span></label>
+          <label class="label text-xs font-medium">ירק <span class="text-error">*</span></label>
           <VegetableSelect
             :model-value="segment.vegetable"
             @update:model-value="update('vegetable', $event)"
           />
-          <p v-if="!segment.vegetable" class="text-xs text-danger-500 mt-1">חובה לבחור ירק</p>
+          <p v-if="!segment.vegetable" class="text-xs text-error mt-1">חובה לבחור ירק</p>
         </template>
       </div>
 
       <div v-if="!isEmpty">
-        <label class="block text-xs font-medium text-soil-500 mb-1.5">תאריך שתילה</label>
+        <label class="label text-xs font-medium">תאריך שתילה</label>
         <div class="flex items-center gap-2">
-          <span class="text-sm text-soil-800">{{ formattedDate }}</span>
+          <span class="text-sm text-base-content">{{ formattedDate }}</span>
           <button
             v-if="!editingDate && !readonly"
             type="button"
             @click="editingDate = true"
-            class="text-garden-600 hover:text-garden-700 cursor-pointer p-1.5 rounded-lg hover:bg-garden-50 transition-colors duration-150"
+            class="btn btn-ghost btn-xs btn-circle text-primary"
             title="שנה תאריך"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -176,45 +176,45 @@ function setFraction(fraction: LengthFraction) {
               type="date"
               :value="segment.planted_at ?? ''"
               @input="update('planted_at', ($event.target as HTMLInputElement).value || null); editingDate = false"
-              class="rounded-lg border border-soil-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-garden-500"
+              class="input input-bordered input-sm"
             />
             <button
               type="button"
               @click="editingDate = false"
-              class="text-xs text-soil-400 hover:text-soil-600 cursor-pointer py-1 px-2 rounded-lg hover:bg-soil-100 transition-colors duration-150"
+              class="btn btn-ghost btn-xs"
             >ביטול</button>
           </template>
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-soil-500 mb-1.5">אורך</label>
-        <div class="flex gap-2">
+        <label class="label text-xs font-medium">אורך</label>
+        <div class="join w-full">
           <button
             v-for="frac in availableFractions"
             :key="frac.value"
             type="button"
             @click="setFraction(frac.value)"
             :disabled="isFractionDisabled(frac.value)"
-            class="flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all duration-150"
+            class="btn join-item flex-1"
             :class="[
               isFractionDisabled(frac.value)
-                ? 'border-soil-100 bg-soil-50 text-soil-300 cursor-not-allowed'
+                ? 'btn-disabled'
                 : currentFraction === frac.value
-                  ? 'border-garden-500 bg-garden-50 text-garden-700 cursor-pointer'
-                  : 'border-soil-200 bg-white text-soil-600 hover:border-soil-300 hover:bg-soil-50 cursor-pointer'
+                  ? 'btn-primary'
+                  : 'btn-outline'
             ]"
           >{{ frac.label }}</button>
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-soil-500 mb-1.5">הערות</label>
+        <label class="label text-xs font-medium">הערות</label>
         <textarea
           :value="segment.notes ?? ''"
           @input="update('notes', ($event.target as HTMLTextAreaElement).value || null)"
           rows="2"
-          class="w-full rounded-lg border border-soil-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-garden-500 resize-none placeholder:text-soil-300"
+          class="textarea textarea-bordered w-full resize-none"
           placeholder="הערות..."
         />
       </div>
