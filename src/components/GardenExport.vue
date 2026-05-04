@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { toPng } from 'html-to-image'
-import type { RowWithSegments } from '../types/database'
+import type { RowWithSegments, Segment } from '../types/database'
 import { useVegetables } from '../composables/useVegetables'
+import { estimatePlanting } from '../composables/usePlantingEstimate'
 
 const props = defineProps<{
   open: boolean
@@ -66,14 +67,31 @@ function getVegetableIcon(name: string): string | null {
   return vegetables.value.find((v) => v.name === name)?.icon ?? null
 }
 
-function getVegetableNames(row: RowWithSegments): string {
-  if (row.segments.length === 0) return 'ריקה'
+interface SegmentDisplayLine {
+  label: string
+  isPlanned: boolean
+  harvestHint: string | null
+}
+
+function getHarvestHint(seg: Segment): string | null {
+  if (!seg.planted_at || seg.is_planned) return null
+  const veg = vegetables.value.find((v) => v.name === seg.vegetable)
+  if (!veg?.days_to_harvest) return null
+  const planted = new Date(seg.planted_at)
+  const harvestDate = new Date(planted.getTime() + veg.days_to_harvest * 86400000)
+  const daysLeft = Math.ceil((harvestDate.getTime() - Date.now()) / 86400000)
+  if (daysLeft <= 0) return 'מוכן לקטיף!'
+  return `קטיף ~${harvestDate.getDate()}.${harvestDate.getMonth() + 1}`
+}
+
+function getSegmentLines(row: RowWithSegments): SegmentDisplayLine[] {
   const planted = row.segments.filter((s) => s.vegetable !== EMPTY_VEGETABLE)
-  if (planted.length === 0) return 'ריקה'
+  if (planted.length === 0) return [{ label: 'ריקה', isPlanned: false, harvestHint: null }]
   return planted.map((s) => {
     const icon = getVegetableIcon(s.vegetable)
-    return icon ? `${icon} ${s.vegetable}` : s.vegetable
-  }).join(', ')
+    const label = icon ? `${icon} ${s.vegetable}` : s.vegetable
+    return { label, isPlanned: s.is_planned, harvestHint: getHarvestHint(s) }
+  })
 }
 
 function getRowNotes(row: RowWithSegments): string {
@@ -83,6 +101,51 @@ function getRowNotes(row: RowWithSegments): string {
     if (seg.notes?.trim()) parts.push(`${seg.vegetable}: ${seg.notes.trim()}`)
   }
   return parts.join(' · ')
+}
+
+const LINE_LABELS: Record<string, string> = {
+  all: 'כל הקווים',
+  sides: 'שמאל + ימין',
+  middle: 'אמצע בלבד',
+}
+
+function hasPlannedSegments(row: RowWithSegments): boolean {
+  return row.segments.some((s) => s.is_planned && s.vegetable !== EMPTY_VEGETABLE)
+}
+
+interface PlannedSegmentInfo {
+  vegetable: string
+  icon: string | null
+  description: string
+}
+
+function getPlannedSegmentInfos(row: RowWithSegments): PlannedSegmentInfo[] {
+  return row.segments
+    .filter((s): s is Segment & { length_m: number } =>
+      s.is_planned && s.vegetable !== EMPTY_VEGETABLE && !!s.length_m)
+    .map((seg) => {
+      const veg = vegetables.value.find((v) => v.name === seg.vegetable)
+      const icon = veg?.icon ?? null
+      if (!veg?.spacing_cm || !veg.lines) {
+        return { vegetable: seg.vegetable, icon, description: 'מתוכנן' }
+      }
+      const est = estimatePlanting(seg.length_m, row.drip_spacing_cm, veg.spacing_cm, veg.lines)
+      const parts: string[] = []
+      if (!veg.is_seeded) {
+        parts.push(`~${est.totalPlants} שתילים`)
+      } else {
+        parts.push('זריעה')
+      }
+      if (est.plantsPerDrip > 1) {
+        parts.push(`${est.plantsPerDrip} לכל טפטפת`)
+      } else if (est.dripInterval > 1) {
+        parts.push(`כל טפטפת ${est.dripInterval}`)
+      } else {
+        parts.push('כל טפטפת')
+      }
+      parts.push(LINE_LABELS[veg.lines])
+      return { vegetable: seg.vegetable, icon, description: parts.join(' · ') }
+    })
 }
 
 async function generateImage() {
@@ -235,23 +298,44 @@ watch(() => props.open, async (isOpen) => {
                   justify-content: center;
                   flex-shrink: 0;
                 ">{{ row.id }}</div>
-                <div style="flex: 1; min-width: 0; overflow: hidden">
-                  <div style="font-size: 15px; font-weight: 500; color: #3d4a3d; overflow-wrap: break-word; word-break: break-word; line-height: 1.6">
-                    {{ getVegetableNames(row) }}
+                <div style="flex: 1; min-width: 0">
+                  <div
+                    v-if="row.has_trellis || hasPlannedSegments(row)"
+                    style="margin-bottom: 2px"
+                  >
                     <span
                       v-if="row.has_trellis"
-                      style="font-size: 11px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 1px 5px; border-radius: 4px; margin-inline-start: 4px; vertical-align: middle"
+                      style="font-size: 11px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 1px 5px; border-radius: 4px; margin-inline-end: 4px"
                     >הדליה</span>
+                    <span
+                      v-if="hasPlannedSegments(row)"
+                      style="font-size: 11px; font-weight: 600; background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 1px 5px; border-radius: 4px"
+                    >מתוכנן</span>
+                  </div>
+                  <div
+                    v-for="(seg, si) in getSegmentLines(row)"
+                    :key="si"
+                    style="font-size: 15px; font-weight: 500; color: #3d4a3d"
+                  >{{ seg.label }}<span
+                      v-if="seg.harvestHint"
+                      :style="{ fontSize: '11px', fontWeight: 400, marginInlineStart: '6px', color: seg.harvestHint === 'מוכן לקטיף!' ? '#d97706' : '#6a8a6a' }"
+                    >{{ seg.harvestHint }}</span></div>
+                  <div
+                    v-for="info in getPlannedSegmentInfos(row)"
+                    :key="info.vegetable"
+                    style="font-size: 12px; color: #1e40af; margin-top: 2px"
+                  >
+                    {{ info.description }}
                   </div>
                   <div
                     v-if="formatPlantingInfo(row)"
-                    style="font-size: 13px; color: #6a8a6a; margin-top: 4px; line-height: 1.4"
+                    style="font-size: 13px; color: #6a8a6a; margin-top: 4px"
                   >
                     {{ formatPlantingInfo(row) }}
                   </div>
                   <div
                     v-if="getRowNotes(row)"
-                    style="font-size: 12px; color: #a0a8a0; margin-top: 4px; overflow-wrap: break-word; word-break: break-word; line-height: 1.4"
+                    style="font-size: 12px; color: #a0a8a0; margin-top: 4px; overflow-wrap: break-word; word-break: break-word"
                   >
                     {{ getRowNotes(row) }}
                   </div>
@@ -289,23 +373,44 @@ watch(() => props.open, async (isOpen) => {
                   justify-content: center;
                   flex-shrink: 0;
                 ">{{ row.id }}</div>
-                <div style="flex: 1; min-width: 0; overflow: hidden">
-                  <div style="font-size: 15px; font-weight: 500; color: #3d4a3d; overflow-wrap: break-word; word-break: break-word; line-height: 1.6">
-                    {{ getVegetableNames(row) }}
+                <div style="flex: 1; min-width: 0">
+                  <div
+                    v-if="row.has_trellis || hasPlannedSegments(row)"
+                    style="margin-bottom: 2px"
+                  >
                     <span
                       v-if="row.has_trellis"
-                      style="font-size: 11px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 1px 5px; border-radius: 4px; margin-inline-start: 4px; vertical-align: middle"
+                      style="font-size: 11px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 1px 5px; border-radius: 4px; margin-inline-end: 4px"
                     >הדליה</span>
+                    <span
+                      v-if="hasPlannedSegments(row)"
+                      style="font-size: 11px; font-weight: 600; background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 1px 5px; border-radius: 4px"
+                    >מתוכנן</span>
+                  </div>
+                  <div
+                    v-for="(seg, si) in getSegmentLines(row)"
+                    :key="si"
+                    style="font-size: 15px; font-weight: 500; color: #3d4a3d"
+                  >{{ seg.label }}<span
+                      v-if="seg.harvestHint"
+                      :style="{ fontSize: '11px', fontWeight: 400, marginInlineStart: '6px', color: seg.harvestHint === 'מוכן לקטיף!' ? '#d97706' : '#6a8a6a' }"
+                    >{{ seg.harvestHint }}</span></div>
+                  <div
+                    v-for="info in getPlannedSegmentInfos(row)"
+                    :key="info.vegetable"
+                    style="font-size: 12px; color: #1e40af; margin-top: 2px"
+                  >
+                    {{ info.description }}
                   </div>
                   <div
                     v-if="formatPlantingInfo(row)"
-                    style="font-size: 13px; color: #6a8a6a; margin-top: 4px; line-height: 1.4"
+                    style="font-size: 13px; color: #6a8a6a; margin-top: 4px"
                   >
                     {{ formatPlantingInfo(row) }}
                   </div>
                   <div
                     v-if="getRowNotes(row)"
-                    style="font-size: 12px; color: #a0a8a0; margin-top: 4px; overflow-wrap: break-word; word-break: break-word; line-height: 1.4"
+                    style="font-size: 12px; color: #a0a8a0; margin-top: 4px; overflow-wrap: break-word; word-break: break-word"
                   >
                     {{ getRowNotes(row) }}
                   </div>

@@ -2,6 +2,7 @@
 import type { Segment } from '../types/database'
 import VegetableSelect from './VegetableSelect.vue'
 import { useVegetables } from '../composables/useVegetables'
+import { estimatePlanting } from '../composables/usePlantingEstimate'
 import { computed, ref } from 'vue'
 
 const props = withDefaults(defineProps<{
@@ -11,10 +12,12 @@ const props = withDefaults(defineProps<{
   remainingPct: number
   readonly: boolean
   expanded: boolean
+  dripSpacingCm: number
 }>(), {
   remainingPct: 100,
   readonly: false,
   expanded: true,
+  dripSpacingCm: 20,
 })
 
 const emit = defineEmits<{
@@ -27,7 +30,6 @@ const { getVegetableColor, vegetables } = useVegetables()
 
 const EMPTY_VEGETABLE = 'ריקה'
 
-const editingDate = ref(false)
 const showNotes = ref(!!props.segment.notes)
 
 const isEmpty = computed(() => props.segment.vegetable === EMPTY_VEGETABLE)
@@ -51,6 +53,43 @@ const daysSincePlanting = computed(() => {
 const formattedDate = computed(() => {
   if (!props.segment.planted_at) return 'לא הוגדר'
   return new Date(props.segment.planted_at).toLocaleDateString('he-IL')
+})
+
+const selectedVegetable = computed(() => {
+  if (!props.segment.vegetable || isEmpty.value) return null
+  return vegetables.value.find((v) => v.name === props.segment.vegetable) ?? null
+})
+
+const plantingEstimate = computed(() => {
+  const veg = selectedVegetable.value
+  if (!veg?.spacing_cm || !veg.lines || !props.segment.length_m) return null
+  return estimatePlanting(
+    props.segment.length_m,
+    props.dripSpacingCm,
+    veg.spacing_cm,
+    veg.lines,
+  )
+})
+
+const LINE_LABELS: Record<string, string> = {
+  all: 'כל הקווים',
+  sides: 'שמאל + ימין',
+  middle: 'אמצע בלבד',
+}
+
+const expectedHarvest = computed(() => {
+  const veg = selectedVegetable.value
+  if (!veg?.days_to_harvest || !props.segment.planted_at) return null
+  const planted = new Date(props.segment.planted_at)
+  const harvestDate = new Date(planted.getTime() + veg.days_to_harvest * 86400000)
+  const daysLeft = Math.ceil((harvestDate.getTime() - Date.now()) / 86400000)
+  return { date: harvestDate, daysLeft }
+})
+
+const formattedHarvestDate = computed(() => {
+  if (!expectedHarvest.value) return ''
+  const d = expectedHarvest.value.date
+  return `${d.getDate()}.${d.getMonth() + 1}`
 })
 
 const fractionLabel = computed(() => {
@@ -142,12 +181,18 @@ function setFraction(fraction: LengthFraction) {
         </span>
       </div>
       <div class="flex items-center gap-1.5 shrink-0">
+        <span v-if="segment.is_planned && !isEmpty" class="badge badge-sm badge-info badge-outline">מתוכנן</span>
         <span v-if="fractionLabel" class="text-xs text-base-content/50">{{ fractionLabel }}</span>
         <span
-          v-if="daysSincePlanting !== null"
+          v-if="daysSincePlanting !== null && !segment.is_planned"
           class="badge badge-sm tabular-nums"
           :style="{ backgroundColor: accentColor + '14', color: accentColor + 'cc' }"
         >{{ daysSincePlanting }}d</span>
+        <span
+          v-if="expectedHarvest && !segment.is_planned"
+          class="badge badge-sm tabular-nums"
+          :class="expectedHarvest.daysLeft <= 0 ? 'badge-warning' : 'badge-success badge-outline'"
+        >{{ expectedHarvest.daysLeft <= 0 ? 'מוכן!' : `קטיף ~${formattedHarvestDate}` }}</span>
         <svg
           class="w-4 h-4 text-base-content/30 transition-transform duration-200"
           :class="{ 'rotate-180': expanded }"
@@ -174,43 +219,76 @@ function setFraction(fraction: LengthFraction) {
               class="badge badge-sm cursor-pointer"
               :class="isEmpty ? 'badge-neutral' : 'badge-ghost badge-outline'"
             >{{ isEmpty ? 'ריקה ✓' : 'סמן ריק' }}</button>
+            <button
+              v-if="!isEmpty"
+              type="button"
+              @click="update('is_planned', !segment.is_planned)"
+              class="badge badge-sm cursor-pointer"
+              :class="segment.is_planned ? 'badge-info' : 'badge-ghost badge-outline'"
+            >{{ segment.is_planned ? 'מתוכנן ✓' : 'סמן כמתוכנן' }}</button>
           </template>
         </div>
         <template v-if="!isEmpty">
-          <VegetableSelect
-            :model-value="segment.vegetable"
-            @update:model-value="update('vegetable', $event)"
-          />
+          <div class="flex items-stretch gap-2">
+            <div class="flex-1 min-w-0">
+              <VegetableSelect
+                :model-value="segment.vegetable"
+                @update:model-value="update('vegetable', $event)"
+              />
+            </div>
+            <label class="btn btn-outline min-w-fit shrink-0 gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formattedDate }}</span>
+              <input
+                type="date"
+                class="sr-only"
+                :value="segment.planted_at ?? ''"
+                @input="update('planted_at', ($event.target as HTMLInputElement).value || null)"
+                :disabled="readonly"
+              />
+            </label>
+          </div>
           <p v-if="!segment.vegetable" class="text-xs text-error mt-1">חובה לבחור ירק</p>
-        </template>
-      </div>
-
-      <!-- Planting date (inline) -->
-      <div v-if="!isEmpty" class="flex items-center gap-2 text-sm">
-        <span class="text-xs text-base-content/50">שתילה:</span>
-        <span class="text-base-content">{{ formattedDate }}</span>
-        <button
-          v-if="!editingDate && !readonly"
-          type="button"
-          @click="editingDate = true"
-          class="btn btn-ghost btn-xs btn-circle text-primary"
-        >
-          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-        </button>
-        <template v-if="editingDate && !readonly">
-          <input
-            type="date"
-            :value="segment.planted_at ?? ''"
-            @input="update('planted_at', ($event.target as HTMLInputElement).value || null); editingDate = false"
-            class="input input-bordered input-xs"
-          />
-          <button
-            type="button"
-            @click="editingDate = false"
-            class="btn btn-ghost btn-xs"
-          >✕</button>
+          <!-- Planting estimate -->
+          <div
+            v-if="plantingEstimate && selectedVegetable"
+            class="mt-2 flex items-center gap-2 text-xs bg-success/10 text-success rounded-lg px-3 py-2"
+          >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            <template v-if="selectedVegetable.is_seeded">
+              <span>זריעה · {{ LINE_LABELS[selectedVegetable.lines!] }}</span>
+              <span v-if="plantingEstimate.dripInterval > 1">· כל טפטפת {{ plantingEstimate.dripInterval }}</span>
+              <span v-else>· כל טפטפת</span>
+            </template>
+            <template v-else>
+              <span class="font-semibold">~{{ plantingEstimate.totalPlants }} שתילים</span>
+              <span class="text-success/70">{{ LINE_LABELS[selectedVegetable.lines!] }}</span>
+              <span v-if="plantingEstimate.plantsPerDrip > 1" class="text-success/70">· {{ plantingEstimate.plantsPerDrip }} לכל טפטפת</span>
+              <span v-else-if="plantingEstimate.dripInterval > 1" class="text-success/70">· כל טפטפת {{ plantingEstimate.dripInterval }}</span>
+            </template>
+          </div>
+          <!-- Harvest ETA -->
+          <div
+            v-if="expectedHarvest && !segment.is_planned"
+            class="mt-1 flex items-center gap-1.5 text-xs px-1"
+            :class="expectedHarvest.daysLeft <= 0 ? 'text-warning' : 'text-base-content/60'"
+          >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <template v-if="expectedHarvest.daysLeft <= 0">
+              <span class="font-medium">מוכן לקטיף!</span>
+              <span>({{ expectedHarvest.date.toLocaleDateString('he-IL') }})</span>
+            </template>
+            <template v-else>
+              <span>קטיף משוער: {{ expectedHarvest.date.toLocaleDateString('he-IL') }}</span>
+              <span class="text-base-content/40">(עוד {{ expectedHarvest.daysLeft }} ימים)</span>
+            </template>
+          </div>
         </template>
       </div>
 
