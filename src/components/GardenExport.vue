@@ -81,7 +81,7 @@ function getHarvestHint(seg: Segment): string | null {
   const harvestDate = new Date(planted.getTime() + veg.days_to_harvest * 86400000)
   const daysLeft = Math.ceil((harvestDate.getTime() - Date.now()) / 86400000)
   if (daysLeft <= 0) return 'מוכן לקטיף!'
-  return `קטיף ~${harvestDate.getDate()}.${harvestDate.getMonth() + 1}`
+  return `קטיף ~${harvestDate.getDate()}/${harvestDate.getMonth() + 1}`
 }
 
 function getSegmentLines(row: RowWithSegments): SegmentDisplayLine[] {

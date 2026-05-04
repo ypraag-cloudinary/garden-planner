@@ -89,7 +89,7 @@ const expectedHarvest = computed(() => {
 const formattedHarvestDate = computed(() => {
   if (!expectedHarvest.value) return ''
   const d = expectedHarvest.value.date
-  return `${d.getDate()}.${d.getMonth() + 1}`
+  return `${d.getDate()}/${d.getMonth() + 1}`
 })
 
 const fractionLabel = computed(() => {
