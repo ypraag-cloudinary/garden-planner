@@ -1,16 +1,3 @@
-<script setup lang="ts">
-import { useAuth } from '../composables/useAuth'
-import { useRouter } from 'vue-router'
-
-const { signOut } = useAuth()
-const router = useRouter()
-
-async function handleLogout() {
-  await signOut()
-  router.replace('/login')
-}
-</script>
-
 <template>
   <div class="min-h-screen bg-base-200">
     <header class="navbar sticky top-0 z-30 bg-base-100/95 backdrop-blur-sm border-b border-base-300">
@@ -21,13 +8,6 @@ async function handleLogout() {
         </router-link>
         <div class="flex items-center gap-2">
           <slot name="header-right" />
-          <button
-            @click="handleLogout"
-            class="btn btn-ghost btn-square btn-sm text-base"
-            title="התנתק"
-          >
-            ⏻
-          </button>
         </div>
       </div>
     </header>
