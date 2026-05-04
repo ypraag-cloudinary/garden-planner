@@ -16,6 +16,7 @@ export interface Segment {
   planted_at: string | null
   length_m: number | null
   notes: string | null
+  is_planned: boolean
   created_at: string
   updated_at: string
 }
@@ -29,6 +30,7 @@ export interface SegmentHistory {
   archived_at: string
   length_m: number | null
   notes: string | null
+  is_planned: boolean
 }
 
 export interface Vegetable {
@@ -36,6 +38,9 @@ export interface Vegetable {
   name: string
   icon: string | null
   days_to_harvest: number | null
+  spacing_cm: number | null
+  lines: 'all' | 'sides' | 'middle' | null
+  is_seeded: boolean
 }
 
 export interface PipeMapping {
