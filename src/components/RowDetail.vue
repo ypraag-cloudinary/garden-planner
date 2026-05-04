@@ -300,8 +300,8 @@ watch(() => props.rowId, load)
   <div v-else-if="row" class="space-y-4">
     <Teleport to="body">
       <Transition name="toast">
-        <div v-if="toast" class="toast toast-top toast-center z-50">
-          <div class="alert" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
+        <div v-if="toast" class="fixed top-4 inset-x-0 z-50 flex justify-center px-4">
+          <div class="alert shadow-lg w-auto max-w-sm" :class="toast.type === 'success' ? 'alert-success' : 'alert-error'">
             <span>{{ toast.message }}</span>
           </div>
         </div>
@@ -597,7 +597,7 @@ watch(() => props.rowId, load)
 .toast-enter-from,
 .toast-leave-to {
   opacity: 0;
-  transform: translate(-50%, -0.75rem);
+  transform: translateY(-0.75rem);
 }
 .bottom-bar-enter-active {
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
