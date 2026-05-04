@@ -22,6 +22,7 @@ export function useArchive() {
         planted_at: s.planted_at,
         length_m: s.length_m,
         notes: s.notes,
+        is_planned: s.is_planned,
       }))
 
       const { error: insertErr } = await supabase

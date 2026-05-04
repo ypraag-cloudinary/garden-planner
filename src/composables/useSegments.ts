@@ -34,6 +34,7 @@ export function useSegments() {
           planted_at: seg.planted_at,
           length_m: seg.length_m,
           notes: seg.notes,
+          is_planned: seg.is_planned,
         })),
       })
       if (error) throw error

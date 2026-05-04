@@ -175,6 +175,7 @@ function addSegment() {
     planted_at: new Date().toISOString().split('T')[0],
     length_m: remainingM > 0 ? remainingM : null,
     notes: null,
+    is_planned: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }
@@ -365,6 +366,7 @@ watch(() => props.rowId, load)
         :segment="seg"
         :index="i"
         :row-length="row.length_m"
+        :drip-spacing-cm="row.drip_spacing_cm"
         :remaining-pct="remainingPctForSegment(i)"
         :readonly="frozenRow"
         :expanded="segments.length === 1 || expandedSegment === i"
