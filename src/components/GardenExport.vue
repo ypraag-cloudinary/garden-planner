@@ -154,7 +154,7 @@ async function generateImage() {
   try {
     await nextTick()
     const dataUrl = await toPng(renderTarget.value, {
-      pixelRatio: 2,
+      pixelRatio: 3,
       skipFonts: true,
     })
     previewUrl.value = dataUrl
@@ -251,48 +251,48 @@ watch(() => props.open, async (isOpen) => {
             ref="renderTarget"
             dir="rtl"
             style="
-              width: 400px;
-              padding: 24px;
+              width: 600px;
+              padding: 32px;
               background: #f7faf7;
               font-family: Rubik, system-ui, sans-serif;
               color: #3d4a3d;
               line-height: 1.5;
             "
           >
-            <div style="text-align: center; margin-bottom: 20px">
-              <div style="font-size: 22px; font-weight: 600; color: #2d5a3d">
+            <div style="text-align: center; margin-bottom: 28px">
+              <div style="font-size: 30px; font-weight: 600; color: #2d5a3d">
                 🌱 גינה קהילתית
               </div>
-              <div style="font-size: 13px; color: #8a9a8a; margin-top: 4px">
+              <div style="font-size: 18px; color: #8a9a8a; margin-top: 6px">
                 {{ todayFormatted }}
               </div>
             </div>
 
-            <div style="font-size: 14px; font-weight: 700; color: #2d5a3d; padding: 8px 0; margin-bottom: 8px; border-bottom: 2px solid #c8dcc8">
+            <div style="font-size: 20px; font-weight: 700; color: #2d5a3d; padding: 10px 0; margin-bottom: 10px; border-bottom: 2px solid #c8dcc8">
               ערוגות 1–13
             </div>
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px">
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px">
               <div
                 v-for="row in sectionARows"
                 :key="row.id"
                 style="
                   display: flex;
                   align-items: flex-start;
-                  gap: 10px;
+                  gap: 12px;
                   background: white;
                   border: 1px solid #e0e8e0;
-                  border-radius: 10px;
-                  padding: 10px 12px;
+                  border-radius: 12px;
+                  padding: 14px 16px;
                 "
               >
                 <div style="
-                  width: 34px;
-                  height: 34px;
-                  border-radius: 8px;
+                  width: 42px;
+                  height: 42px;
+                  border-radius: 10px;
                   background: #ddf0dd;
                   color: #2d5a3d;
                   font-weight: 700;
-                  font-size: 15px;
+                  font-size: 20px;
                   display: flex;
                   align-items: center;
                   justify-content: center;
@@ -301,41 +301,41 @@ watch(() => props.open, async (isOpen) => {
                 <div style="flex: 1; min-width: 0">
                   <div
                     v-if="row.has_trellis || hasPlannedSegments(row)"
-                    style="margin-bottom: 2px"
+                    style="margin-bottom: 3px"
                   >
                     <span
                       v-if="row.has_trellis"
-                      style="font-size: 11px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 1px 5px; border-radius: 4px; margin-inline-end: 4px"
+                      style="font-size: 14px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 2px 7px; border-radius: 5px; margin-inline-end: 5px"
                     >הדליה</span>
                     <span
                       v-if="hasPlannedSegments(row)"
-                      style="font-size: 11px; font-weight: 600; background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 1px 5px; border-radius: 4px"
+                      style="font-size: 14px; font-weight: 600; background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 2px 7px; border-radius: 5px"
                     >מתוכנן</span>
                   </div>
                   <div
                     v-for="(seg, si) in getSegmentLines(row)"
                     :key="si"
-                    style="font-size: 15px; font-weight: 500; color: #3d4a3d"
+                    style="font-size: 20px; font-weight: 500; color: #3d4a3d"
                   >{{ seg.label }}<span
                       v-if="seg.harvestHint"
-                      :style="{ fontSize: '11px', fontWeight: 400, marginInlineStart: '6px', color: seg.harvestHint === 'מוכן לקטיף!' ? '#d97706' : '#6a8a6a' }"
+                      :style="{ fontSize: '14px', fontWeight: 400, marginInlineStart: '8px', color: seg.harvestHint === 'מוכן לקטיף!' ? '#d97706' : '#6a8a6a' }"
                     >{{ seg.harvestHint }}</span></div>
                   <div
                     v-for="info in getPlannedSegmentInfos(row)"
                     :key="info.vegetable"
-                    style="font-size: 12px; color: #1e40af; margin-top: 2px"
+                    style="font-size: 16px; color: #1e40af; margin-top: 3px"
                   >
                     {{ info.description }}
                   </div>
                   <div
                     v-if="formatPlantingInfo(row)"
-                    style="font-size: 13px; color: #6a8a6a; margin-top: 4px"
+                    style="font-size: 17px; color: #6a8a6a; margin-top: 5px"
                   >
                     {{ formatPlantingInfo(row) }}
                   </div>
                   <div
                     v-if="getRowNotes(row)"
-                    style="font-size: 12px; color: #a0a8a0; margin-top: 4px; overflow-wrap: break-word; word-break: break-word"
+                    style="font-size: 16px; color: #a0a8a0; margin-top: 5px; overflow-wrap: break-word; word-break: break-word"
                   >
                     {{ getRowNotes(row) }}
                   </div>
@@ -343,31 +343,31 @@ watch(() => props.open, async (isOpen) => {
               </div>
             </div>
 
-            <div style="font-size: 14px; font-weight: 700; color: #2d5a3d; padding: 8px 0; margin-bottom: 8px; border-bottom: 2px solid #c8dcc8">
+            <div style="font-size: 20px; font-weight: 700; color: #2d5a3d; padding: 10px 0; margin-bottom: 10px; border-bottom: 2px solid #c8dcc8">
               ערוגות 14–27
             </div>
-            <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; flex-direction: column; gap: 10px">
               <div
                 v-for="row in sectionBRows"
                 :key="row.id"
                 style="
                   display: flex;
                   align-items: flex-start;
-                  gap: 10px;
+                  gap: 12px;
                   background: white;
                   border: 1px solid #e0e8e0;
-                  border-radius: 10px;
-                  padding: 10px 12px;
+                  border-radius: 12px;
+                  padding: 14px 16px;
                 "
               >
                 <div style="
-                  width: 34px;
-                  height: 34px;
-                  border-radius: 8px;
+                  width: 42px;
+                  height: 42px;
+                  border-radius: 10px;
                   background: #ddf0dd;
                   color: #2d5a3d;
                   font-weight: 700;
-                  font-size: 15px;
+                  font-size: 20px;
                   display: flex;
                   align-items: center;
                   justify-content: center;
@@ -376,41 +376,41 @@ watch(() => props.open, async (isOpen) => {
                 <div style="flex: 1; min-width: 0">
                   <div
                     v-if="row.has_trellis || hasPlannedSegments(row)"
-                    style="margin-bottom: 2px"
+                    style="margin-bottom: 3px"
                   >
                     <span
                       v-if="row.has_trellis"
-                      style="font-size: 11px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 1px 5px; border-radius: 4px; margin-inline-end: 4px"
+                      style="font-size: 14px; font-weight: 600; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 2px 7px; border-radius: 5px; margin-inline-end: 5px"
                     >הדליה</span>
                     <span
                       v-if="hasPlannedSegments(row)"
-                      style="font-size: 11px; font-weight: 600; background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 1px 5px; border-radius: 4px"
+                      style="font-size: 14px; font-weight: 600; background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 2px 7px; border-radius: 5px"
                     >מתוכנן</span>
                   </div>
                   <div
                     v-for="(seg, si) in getSegmentLines(row)"
                     :key="si"
-                    style="font-size: 15px; font-weight: 500; color: #3d4a3d"
+                    style="font-size: 20px; font-weight: 500; color: #3d4a3d"
                   >{{ seg.label }}<span
                       v-if="seg.harvestHint"
-                      :style="{ fontSize: '11px', fontWeight: 400, marginInlineStart: '6px', color: seg.harvestHint === 'מוכן לקטיף!' ? '#d97706' : '#6a8a6a' }"
+                      :style="{ fontSize: '14px', fontWeight: 400, marginInlineStart: '8px', color: seg.harvestHint === 'מוכן לקטיף!' ? '#d97706' : '#6a8a6a' }"
                     >{{ seg.harvestHint }}</span></div>
                   <div
                     v-for="info in getPlannedSegmentInfos(row)"
                     :key="info.vegetable"
-                    style="font-size: 12px; color: #1e40af; margin-top: 2px"
+                    style="font-size: 16px; color: #1e40af; margin-top: 3px"
                   >
                     {{ info.description }}
                   </div>
                   <div
                     v-if="formatPlantingInfo(row)"
-                    style="font-size: 13px; color: #6a8a6a; margin-top: 4px"
+                    style="font-size: 17px; color: #6a8a6a; margin-top: 5px"
                   >
                     {{ formatPlantingInfo(row) }}
                   </div>
                   <div
                     v-if="getRowNotes(row)"
-                    style="font-size: 12px; color: #a0a8a0; margin-top: 4px; overflow-wrap: break-word; word-break: break-word"
+                    style="font-size: 16px; color: #a0a8a0; margin-top: 5px; overflow-wrap: break-word; word-break: break-word"
                   >
                     {{ getRowNotes(row) }}
                   </div>
