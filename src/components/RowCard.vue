@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { RowWithSegments } from '../types/database'
 import SegmentBar from './SegmentBar.vue'
+import { CalendarDaysIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps<{
   row: RowWithSegments
@@ -52,7 +53,12 @@ const daysSincePlanting = computed(() => {
           </div>
         </div>
         <div class="flex flex-col items-end gap-1 shrink-0">
-          <div v-if="daysSincePlanting !== null" class="badge badge-primary badge-outline badge-sm tabular-nums whitespace-nowrap">
+          <div
+            v-if="daysSincePlanting !== null"
+            class="badge badge-primary badge-outline badge-sm tabular-nums whitespace-nowrap gap-1 tooltip tooltip-right"
+            :data-tip="`${daysSincePlanting} ימים מאז שתילה`"
+          >
+            <CalendarDaysIcon class="w-3 h-3" />
             {{ daysSincePlanting }} ימים
           </div>
           <div class="flex gap-1">

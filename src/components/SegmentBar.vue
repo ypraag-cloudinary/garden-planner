@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 const { getVegetableColor, vegetables } = useVegetables()
 
+const baseUrl = import.meta.env.BASE_URL
 const EMPTY_VEGETABLE = 'ריקה'
 
 function getIcon(name: string): string | null {
@@ -56,12 +57,18 @@ const unallocatedPct = computed(() => {
         :key="bar.id"
         type="button"
         @click="emit('select-segment', bar.index)"
-        class="rounded-md border transition-all duration-300 ease-out flex items-center justify-start ps-2 cursor-pointer hover:bg-base-200 active:bg-base-300"
-        :style="{ width: bar.width + '%', borderColor: bar.color + '66', background: `linear-gradient(to right, ${bar.color}22, transparent 40%)` }"
+        class="rounded-md border transition-all duration-300 ease-out flex items-center justify-start ps-2 cursor-pointer hover:bg-base-200 active:bg-base-300 border-s-[5px]"
+        :style="{
+          width: bar.width + '%',
+          borderColor: bar.color + '40',
+          borderInlineStartColor: bar.color,
+          ...(bar.isEmpty ? { background: 'repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(0,0,0,0.04) 4px, rgba(0,0,0,0.04) 8px)' } : {}),
+        }"
       >
         <VegIcon v-if="bar.icon" :name="bar.icon" size="0.875rem" />
+        <img v-else-if="bar.isEmpty" :src="`${baseUrl}icons/shovel.svg`" class="w-3.5 h-3.5 opacity-25" alt="" />
         <span
-          v-else-if="bar.vegetable && !bar.isEmpty && bar.width > 20"
+          v-else-if="bar.vegetable && bar.width > 20"
           class="text-[10px] text-base-content/50 font-medium truncate px-1"
         >{{ bar.vegetable }}</span>
       </button>
