@@ -34,7 +34,7 @@ const daysSincePlanting = computed(() => {
 <template>
   <router-link
     :to="{ name: 'row', params: { id: row.id } }"
-    class="card bg-base-100 border border-base-300 hover:border-neutral/30 active:bg-base-200 transition-all duration-150 no-underline text-inherit"
+    class="card rounded-lg bg-base-100 border border-base-300 hover:border-neutral/30 active:bg-base-200 transition-all duration-150 no-underline text-inherit"
   >
     <div class="card-body p-4 gap-2.5">
       <div class="flex items-center gap-2.5">

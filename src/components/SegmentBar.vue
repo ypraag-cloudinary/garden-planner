@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Segment } from '../types/database'
 import { useVegetables } from '../composables/useVegetables'
+import VegIcon from './VegIcon.vue'
 
 const props = defineProps<{
   segments: Segment[]
@@ -49,31 +50,31 @@ const unallocatedPct = computed(() => {
 
 <template>
   <div v-if="bars.length > 0" class="space-y-1.5">
-    <div class="flex h-7 rounded-lg overflow-hidden bg-base-300 gap-px">
+    <div class="flex h-7 rounded-md overflow-hidden gap-1">
       <button
         v-for="bar in bars"
         :key="bar.id"
         type="button"
         @click="emit('select-segment', bar.index)"
-        class="rounded-lg transition-all duration-300 ease-out flex items-center justify-center cursor-pointer hover:brightness-105 active:brightness-95"
-        :style="{ width: bar.width + '%', backgroundColor: bar.color + 'cc' }"
+        class="rounded-md border transition-all duration-300 ease-out flex items-center justify-start ps-2 cursor-pointer hover:bg-base-200 active:bg-base-300"
+        :style="{ width: bar.width + '%', borderColor: bar.color + '66', background: `linear-gradient(to right, ${bar.color}22, transparent 40%)` }"
       >
-        <span v-if="bar.icon" class="text-xs leading-none">{{ bar.icon }}</span>
+        <VegIcon v-if="bar.icon" :name="bar.icon" size="0.875rem" />
         <span
           v-else-if="bar.vegetable && !bar.isEmpty && bar.width > 20"
-          class="text-[10px] text-white/80 font-medium truncate px-1"
+          class="text-[10px] text-base-content/50 font-medium truncate px-1"
         >{{ bar.vegetable }}</span>
       </button>
       <div
         v-if="unallocatedPct > 2"
-        class="rounded-lg border-2 border-dashed border-base-content/15 flex items-center justify-center"
+        class="rounded-md border-2 border-dashed border-base-content/15 flex items-center justify-center"
         :style="{ width: unallocatedPct + '%' }"
       >
         <span v-if="unallocatedPct > 15" class="text-[10px] text-base-content/30">פנוי</span>
       </div>
     </div>
   </div>
-  <div v-else class="h-7 rounded-lg bg-base-200 border-2 border-dashed border-base-300 flex items-center justify-center">
+  <div v-else class="h-7 rounded-md bg-base-200 border-2 border-dashed border-base-300 flex items-center justify-center">
     <span class="text-[10px] text-base-content/30">לא הוקצה</span>
   </div>
 </template>
