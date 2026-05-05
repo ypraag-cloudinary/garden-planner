@@ -165,7 +165,7 @@ function setFraction(fraction: LengthFraction) {
     class="card bg-base-100 border overflow-hidden transition-all duration-200"
     :class="[
       readonly ? 'opacity-70' : '',
-      isEmpty ? 'border-base-200 bg-base-200/50' : 'border-base-300',
+      isEmpty ? 'border-base-200' : 'border-base-300',
     ]"
   >
     <div class="h-1" :style="{ backgroundColor: accentColor + 'aa' }" />
@@ -231,7 +231,7 @@ function setFraction(fraction: LengthFraction) {
           </template>
         </div>
         <template v-if="!isEmpty">
-          <div class="flex items-stretch gap-2">
+          <div class="flex items-stretch gap-2" :class="{ 'opacity-50 pointer-events-none': readonly }">
             <div class="flex-1 min-w-0">
               <VegetableSelect
                 :model-value="segment.vegetable"
@@ -257,6 +257,7 @@ function setFraction(fraction: LengthFraction) {
           <div
             v-if="plantingEstimate && selectedVegetable"
             class="mt-2 flex items-center gap-2 text-xs bg-success/10 text-success rounded-lg px-3 py-2"
+            :class="{ 'opacity-50': readonly }"
           >
             <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -302,13 +303,13 @@ function setFraction(fraction: LengthFraction) {
             :key="frac.value"
             type="button"
             @click="setFraction(frac.value)"
-            :disabled="isFractionDisabled(frac.value)"
+            :disabled="readonly || isFractionDisabled(frac.value)"
             class="btn join-item flex-1 btn-sm"
             :class="[
-              isFractionDisabled(frac.value)
-                ? 'btn-disabled'
-                : currentFraction === frac.value
-                  ? 'btn-primary'
+              currentFraction === frac.value
+                ? 'btn-primary'
+                : (readonly || isFractionDisabled(frac.value))
+                  ? 'btn-outline !bg-transparent !text-base-content/30 !border-base-300'
                   : 'btn-outline'
             ]"
           >{{ frac.label }}</button>
