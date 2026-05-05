@@ -22,6 +22,21 @@ const EMPTY_VEGETABLE = 'ריקה'
 const RECENT_KEY = 'gina-recent-vegetables'
 const MAX_RECENT = 5
 
+const SEASON_META: Record<string, { icon: string; label: string }> = {
+  spring: { icon: '🌱', label: 'אביב' },
+  summer: { icon: '☀️', label: 'קיץ' },
+  fall:   { icon: '🍂', label: 'סתיו' },
+  winter: { icon: '🌧️', label: 'חורף' },
+}
+const SEASON_ORDER = ['spring', 'summer', 'fall', 'winter']
+
+function seasonIcons(seasons: string[] | null): { icon: string; label: string }[] {
+  if (!seasons?.length) return []
+  return SEASON_ORDER
+    .filter((k) => seasons.includes(k))
+    .map((k) => SEASON_META[k])
+}
+
 const recentNames = ref<string[]>(loadRecent())
 
 function loadRecent(): string[] {
@@ -138,20 +153,31 @@ onMounted(fetchVegetables)
           </div>
 
           <div class="flex-1 overflow-y-auto p-3">
-            <div class="menu menu-lg p-0">
-              <li v-for="veg in filtered" :key="veg.id">
+            <div class="menu menu-lg p-0 w-full">
+              <li v-for="veg in filtered" :key="veg.id" class="w-full border-b border-base-200 last:border-b-0">
                 <button
                   type="button"
                   @click="select(veg.name)"
-                  class="flex items-center gap-2.5 text-right"
+                  class="flex items-center gap-2.5 text-right w-full"
                   :class="modelValue === veg.name ? 'active' : ''"
                 >
                   <VegIcon :name="veg.icon" size="1.5rem" />
-                  <div class="flex flex-col items-start">
-                    <span class="text-sm">{{ veg.name }}</span>
+                  <div class="flex flex-col items-start min-w-0 flex-1">
+                    <span class="text-sm">
+                      {{ veg.name }}
+                      <span v-if="veg.needs_trellis" class="text-[11px] text-warning/70">(זקוק להדליה)</span>
+                    </span>
                     <span v-if="veg.days_to_harvest" class="text-[11px] text-base-content/40">
                       {{ veg.days_to_harvest }} ימים לקטיף
                     </span>
+                  </div>
+                  <div v-if="veg.season?.length" class="flex gap-0.5 mr-auto shrink-0 grayscale opacity-60" dir="ltr">
+                    <span
+                      v-for="s in seasonIcons(veg.season)"
+                      :key="s.label"
+                      :title="s.label"
+                      class="text-lg leading-none"
+                    >{{ s.icon }}</span>
                   </div>
                 </button>
               </li>

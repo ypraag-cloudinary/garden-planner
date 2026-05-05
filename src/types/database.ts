@@ -41,6 +41,8 @@ export interface Vegetable {
   spacing_cm: number | null
   lines: 'all' | 'sides' | 'middle' | null
   is_seeded: boolean
+  season: string[] | null
+  needs_trellis: boolean
 }
 
 export interface PipeMapping {
