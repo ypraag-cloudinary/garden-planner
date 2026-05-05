@@ -16,6 +16,9 @@ dist-ssr
 # Supabase temp files
 supabase/.temp/
 
+# Reference files (not for deployment)
+reference-*.png
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
