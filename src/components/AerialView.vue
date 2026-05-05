@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { XMarkIcon } from '@heroicons/vue/24/outline'
 
 defineProps<{
   open: boolean
@@ -68,7 +69,7 @@ function onPointerUp() {
             <button @click="zoomOut" class="btn btn-ghost btn-square btn-sm text-neutral-content text-lg">−</button>
             <button @click="resetView" class="btn btn-ghost btn-sm text-neutral-content text-xs tabular-nums">{{ Math.round(scale * 100) }}%</button>
             <button @click="zoomIn" class="btn btn-ghost btn-square btn-sm text-neutral-content text-lg">+</button>
-            <button @click="emit('close')" class="btn btn-ghost btn-square btn-sm text-neutral-content mr-1">✕</button>
+            <button @click="emit('close')" class="btn btn-ghost btn-square btn-sm text-neutral-content mr-1"><XMarkIcon class="w-5 h-5" /></button>
           </div>
         </div>
         <div

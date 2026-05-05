@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import RowDetail from '../components/RowDetail.vue'
 import { useRows } from '../composables/useRows'
+import { XMarkIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps<{
   id: string
@@ -140,7 +141,7 @@ const hasSegments = computed(() => (detailRef.value?.segments?.length ?? 0) > 0)
               <button
                 @click="showOverflow = false"
                 class="btn btn-ghost btn-circle btn-sm"
-              >✕</button>
+              ><XMarkIcon class="w-5 h-5" /></button>
             </div>
             <ul class="menu w-full px-2 pb-3">
               <li>

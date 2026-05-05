@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { Segment } from '../types/database'
 import VegetableSelect from './VegetableSelect.vue'
+import VegIcon from './VegIcon.vue'
 import { useVegetables } from '../composables/useVegetables'
 import { estimatePlanting } from '../composables/usePlantingEstimate'
 import { computed, ref } from 'vue'
+import { CheckIcon } from '@heroicons/vue/24/outline'
 
 const props = withDefaults(defineProps<{
   segment: Segment
@@ -173,7 +175,7 @@ function setFraction(fraction: LengthFraction) {
       class="flex items-center gap-2.5 px-4 py-3 cursor-pointer"
       @click="emit('toggle')"
     >
-      <span v-if="vegIcon" class="text-lg leading-none shrink-0">{{ vegIcon }}</span>
+      <VegIcon v-if="vegIcon" :name="vegIcon" size="1.25rem" />
       <span v-else class="w-5 h-5 rounded-full shrink-0" :style="{ backgroundColor: accentColor + 'aa' }" />
       <div class="flex-1 min-w-0">
         <span class="text-sm font-medium text-base-content truncate block">
@@ -218,14 +220,14 @@ function setFraction(fraction: LengthFraction) {
               @click="toggleEmpty"
               class="badge badge-sm cursor-pointer"
               :class="isEmpty ? 'badge-neutral' : 'badge-ghost badge-outline'"
-            >{{ isEmpty ? 'ריקה ✓' : 'סמן ריק' }}</button>
+            ><template v-if="isEmpty">ריקה <CheckIcon class="w-3.5 h-3.5 inline" /></template><template v-else>סמן ריק</template></button>
             <button
               v-if="!isEmpty"
               type="button"
               @click="update('is_planned', !segment.is_planned)"
               class="badge badge-sm cursor-pointer"
               :class="segment.is_planned ? 'badge-info' : 'badge-ghost badge-outline'"
-            >{{ segment.is_planned ? 'מתוכנן ✓' : 'סמן כמתוכנן' }}</button>
+            ><template v-if="segment.is_planned">מתוכנן <CheckIcon class="w-3.5 h-3.5 inline" /></template><template v-else>סמן כמתוכנן</template></button>
           </template>
         </div>
         <template v-if="!isEmpty">

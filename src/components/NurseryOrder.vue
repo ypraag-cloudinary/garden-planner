@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue'
 import type { RowWithSegments } from '../types/database'
 import { useVegetables } from '../composables/useVegetables'
 import { estimatePlanting } from '../composables/usePlantingEstimate'
+import VegIcon from './VegIcon.vue'
+import { XMarkIcon, ClipboardIcon, CheckIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps<{
   open: boolean
@@ -82,12 +84,11 @@ function formatRowBreakdown(rows: RowBreakdown[], isSeeded: boolean): string {
 }
 
 function buildText(): string {
-  const parts: string[] = ['🌱 הזמנה למשתלה', todayFormatted.value, '']
+  const parts: string[] = ['הזמנה למשתלה', todayFormatted.value, '']
 
   if (transplants.value.length > 0) {
     for (const line of transplants.value) {
-      const icon = line.icon ? `${line.icon} ` : ''
-      parts.push(`${icon}${line.name} — ${line.total} שתילים`)
+      parts.push(`${line.name} — ${line.total} שתילים`)
       if (line.rows.length > 1) {
         parts.push(`   ${formatRowBreakdown(line.rows, false)}`)
       } else if (line.rows.length === 1) {
@@ -100,8 +101,7 @@ function buildText(): string {
     parts.push('')
     parts.push('זריעה ישירה:')
     for (const line of seeded.value) {
-      const icon = line.icon ? `${line.icon} ` : ''
-      parts.push(`${icon}${line.name} — ${formatRowBreakdown(line.rows, true)}`)
+      parts.push(`${line.name} — ${formatRowBreakdown(line.rows, true)}`)
     }
   }
 
@@ -144,11 +144,11 @@ async function copyList() {
       >
         <div class="modal-box max-h-[85vh] flex flex-col">
           <div class="flex items-center justify-between mb-1">
-            <h3 class="font-semibold text-base-content text-lg">🌱 הזמנה למשתלה</h3>
+            <h3 class="font-semibold text-base-content text-lg flex items-center gap-2"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21c0-4-2-7-5-9 3-1 5 1 5 4m0 5c0-4 2-7 5-9-3-1-5 1-5 4m0-12v8" /></svg> הזמנה למשתלה</h3>
             <button
               @click="emit('close')"
               class="btn btn-ghost btn-circle btn-sm"
-            >✕</button>
+            ><XMarkIcon class="w-5 h-5" /></button>
           </div>
           <p class="text-xs text-base-content/40 mb-4">{{ todayFormatted }}</p>
 
@@ -166,7 +166,7 @@ async function copyList() {
                   class="bg-base-200/50 rounded-lg px-3 py-2.5"
                 >
                   <div class="flex items-center gap-3">
-                    <span v-if="line.icon" class="text-lg leading-none shrink-0">{{ line.icon }}</span>
+                    <VegIcon v-if="line.icon" :name="line.icon" size="1.25rem" />
                     <span class="flex-1 text-sm text-base-content">{{ line.name }}</span>
                     <span class="font-semibold text-sm tabular-nums text-primary">{{ line.total }}</span>
                     <span class="text-xs text-base-content/40">שתילים</span>
@@ -190,7 +190,7 @@ async function copyList() {
                     class="flex items-center gap-2 px-1"
                   >
                     <span class="badge badge-neutral badge-outline gap-1">
-                      <span v-if="line.icon">{{ line.icon }}</span>
+                      <VegIcon v-if="line.icon" :name="line.icon" size="0.875rem" />
                       {{ line.name }}
                     </span>
                     <span class="text-xs text-base-content/40">{{ line.rows.map(r => `ערוגה ${r.rowId}`).join(', ') }}</span>
@@ -205,7 +205,7 @@ async function copyList() {
               @click="copyList"
               class="btn flex-1"
               :class="copied ? 'btn-success' : 'btn-outline'"
-            >{{ copied ? 'הועתק ✓' : '📋 העתק' }}</button>
+            ><component :is="copied ? CheckIcon : ClipboardIcon" class="w-4 h-4" /> {{ copied ? 'הועתק' : 'העתק' }}</button>
             <button
               v-if="canShare"
               @click="shareList"

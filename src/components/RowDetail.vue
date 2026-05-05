@@ -6,6 +6,7 @@ import { useRows } from '../composables/useRows'
 import { useArchive } from '../composables/useArchive'
 import SegmentEditor from './SegmentEditor.vue'
 import SegmentBar from './SegmentBar.vue'
+import { XMarkIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps<{
   rowId: number
@@ -389,7 +390,9 @@ watch(() => props.rowId, load)
     </button>
 
     <div v-if="segments.length === 0" class="text-center py-10 text-base-content/40">
-      <div class="text-3xl mb-2">🌱</div>
+      <div class="mb-2 flex justify-center">
+        <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21c0-4-2-7-5-9 3-1 5 1 5 4m0 5c0-4 2-7 5-9-3-1-5 1-5 4m0-12v8" /></svg>
+      </div>
       <div class="text-sm">הערוגה ריקה — הוסף חלק כדי להתחיל לשתול</div>
     </div>
 
@@ -408,7 +411,7 @@ watch(() => props.rowId, load)
               <button
                 @click="showHistory = false"
                 class="btn btn-ghost btn-circle btn-sm"
-              >✕</button>
+              ><XMarkIcon class="w-5 h-5" /></button>
             </div>
             <div class="flex-1 overflow-y-auto">
               <div v-if="groupedHistory.length === 0" class="p-8 text-center text-base-content/40 text-sm">
@@ -452,7 +455,7 @@ watch(() => props.rowId, load)
               <button
                 @click="showRowSettings = false"
                 class="btn btn-ghost btn-circle btn-sm"
-              >✕</button>
+              ><XMarkIcon class="w-5 h-5" /></button>
             </div>
             <div class="space-y-4">
               <div>

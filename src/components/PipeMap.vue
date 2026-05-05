@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { usePipeMappings } from '../composables/usePipeMappings'
+import { XMarkIcon, PencilIcon } from '@heroicons/vue/24/outline'
 
 defineProps<{
   open: boolean
@@ -77,11 +78,11 @@ function cancelEdit() {
               @click="editing = true"
               class="btn btn-ghost btn-sm text-neutral-content"
               title="עריכה"
-            >✏️ עריכה</button>
+            ><PencilIcon class="w-4 h-4" /> עריכה</button>
             <button
               @click="emit('close')"
               class="btn btn-ghost btn-square btn-sm text-neutral-content mr-1"
-            >✕</button>
+            ><XMarkIcon class="w-5 h-5" /></button>
           </div>
         </div>
 

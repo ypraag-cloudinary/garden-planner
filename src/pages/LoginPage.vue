@@ -25,14 +25,14 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-base-200 flex items-center justify-center px-4" dir="rtl">
+  <div class="min-h-screen bg-base-200 flex flex-col items-center justify-center px-4" dir="rtl">
     <form
       @submit.prevent="handleSubmit"
       class="card bg-base-100 shadow-lg w-full max-w-xs"
     >
       <div class="card-body gap-5">
         <div class="text-center">
-          <span class="text-4xl">🌱</span>
+          <svg class="w-12 h-12 mx-auto text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21c0-4-2-7-5-9 3-1 5 1 5 4m0 5c0-4 2-7 5-9-3-1-5 1-5 4m0-12v8" /></svg>
           <h1 class="text-xl font-semibold text-primary mt-2">גינה קהילתית</h1>
         </div>
 
@@ -71,5 +71,8 @@ async function handleSubmit() {
         </button>
       </div>
     </form>
+    <p class="mt-6 text-[10px] text-base-content/30" dir="ltr">
+      <a href="https://www.flaticon.com/free-icons/vegetable" target="_blank" rel="noopener" class="hover:underline">Vegetable icons created by Freepik - Flaticon</a>
+    </p>
   </div>
 </template>

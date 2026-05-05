@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useVegetables } from '../composables/useVegetables'
+import VegIcon from './VegIcon.vue'
+import { XMarkIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps<{
   modelValue: string
@@ -86,7 +88,7 @@ onMounted(fetchVegetables)
       class="btn btn-outline w-full justify-start gap-2 font-normal"
     >
       <template v-if="modelValue">
-        <span v-if="selectedVeg?.icon" class="text-base">{{ selectedVeg.icon }}</span>
+        <VegIcon v-if="selectedVeg?.icon" :name="selectedVeg.icon" size="1.25rem" />
         <span class="text-base-content">{{ modelValue }}</span>
       </template>
       <span v-else class="text-base-content/40">בחר ירק...</span>
@@ -104,7 +106,7 @@ onMounted(fetchVegetables)
         @click="quickSelect(veg.name)"
         class="badge badge-outline badge-sm gap-1 cursor-pointer hover:badge-primary transition-colors py-2.5"
       >
-        <span v-if="veg.icon" class="text-xs">{{ veg.icon }}</span>
+        <VegIcon v-if="veg.icon" :name="veg.icon" size="0.875rem" />
         <span>{{ veg.name }}</span>
       </button>
     </div>
@@ -124,7 +126,7 @@ onMounted(fetchVegetables)
               <button
                 @click="isOpen = false"
                 class="btn btn-ghost btn-circle btn-sm"
-              >✕</button>
+              ><XMarkIcon class="w-5 h-5" /></button>
             </div>
             <input
               ref="searchInput"
@@ -144,7 +146,7 @@ onMounted(fetchVegetables)
                   class="flex items-center gap-2.5 text-right"
                   :class="modelValue === veg.name ? 'active' : ''"
                 >
-                  <span class="text-xl leading-none shrink-0">{{ veg.icon || '🌱' }}</span>
+                  <VegIcon :name="veg.icon" size="1.5rem" />
                   <div class="flex flex-col items-start">
                     <span class="text-sm">{{ veg.name }}</span>
                     <span v-if="veg.days_to_harvest" class="text-[11px] text-base-content/40">

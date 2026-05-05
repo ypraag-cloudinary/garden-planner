@@ -4,6 +4,8 @@ import { toPng } from 'html-to-image'
 import type { RowWithSegments, Segment } from '../types/database'
 import { useVegetables } from '../composables/useVegetables'
 import { estimatePlanting } from '../composables/usePlantingEstimate'
+import VegIcon from './VegIcon.vue'
+import { XMarkIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps<{
   open: boolean
@@ -69,6 +71,7 @@ function getVegetableIcon(name: string): string | null {
 
 interface SegmentDisplayLine {
   label: string
+  icon: string | null
   isPlanned: boolean
   harvestHint: string | null
 }
@@ -86,11 +89,10 @@ function getHarvestHint(seg: Segment): string | null {
 
 function getSegmentLines(row: RowWithSegments): SegmentDisplayLine[] {
   const planted = row.segments.filter((s) => s.vegetable !== EMPTY_VEGETABLE)
-  if (planted.length === 0) return [{ label: 'ריקה', isPlanned: false, harvestHint: null }]
+  if (planted.length === 0) return [{ label: 'ריקה', icon: null, isPlanned: false, harvestHint: null }]
   return planted.map((s) => {
     const icon = getVegetableIcon(s.vegetable)
-    const label = icon ? `${icon} ${s.vegetable}` : s.vegetable
-    return { label, isPlanned: s.is_planned, harvestHint: getHarvestHint(s) }
+    return { label: s.vegetable, icon, isPlanned: s.is_planned, harvestHint: getHarvestHint(s) }
   })
 }
 
@@ -227,7 +229,7 @@ watch(() => props.open, async (isOpen) => {
             <button
               @click="handleClose"
               class="btn btn-ghost btn-square btn-sm text-neutral-content mr-1"
-            >✕</button>
+            ><XMarkIcon class="w-5 h-5" /></button>
           </div>
         </div>
 
@@ -261,7 +263,7 @@ watch(() => props.open, async (isOpen) => {
           >
             <div style="text-align: center; margin-bottom: 28px">
               <div style="font-size: 30px; font-weight: 600; color: #2d5a3d">
-                🌱 גינה קהילתית
+                גינה קהילתית
               </div>
               <div style="font-size: 18px; color: #8a9a8a; margin-top: 6px">
                 {{ todayFormatted }}
@@ -315,8 +317,8 @@ watch(() => props.open, async (isOpen) => {
                   <div
                     v-for="(seg, si) in getSegmentLines(row)"
                     :key="si"
-                    style="font-size: 20px; font-weight: 500; color: #3d4a3d"
-                  >{{ seg.label }}<span
+                    style="font-size: 20px; font-weight: 500; color: #3d4a3d; display: flex; align-items: center; gap: 6px"
+                  ><VegIcon v-if="seg.icon" :name="seg.icon" size="1.25rem" />{{ seg.label }}<span
                       v-if="seg.harvestHint"
                       :style="{ fontSize: '14px', fontWeight: 400, marginInlineStart: '8px', color: seg.harvestHint === 'מוכן לקטיף!' ? '#d97706' : '#6a8a6a' }"
                     >{{ seg.harvestHint }}</span></div>
@@ -390,8 +392,8 @@ watch(() => props.open, async (isOpen) => {
                   <div
                     v-for="(seg, si) in getSegmentLines(row)"
                     :key="si"
-                    style="font-size: 20px; font-weight: 500; color: #3d4a3d"
-                  >{{ seg.label }}<span
+                    style="font-size: 20px; font-weight: 500; color: #3d4a3d; display: flex; align-items: center; gap: 6px"
+                  ><VegIcon v-if="seg.icon" :name="seg.icon" size="1.25rem" />{{ seg.label }}<span
                       v-if="seg.harvestHint"
                       :style="{ fontSize: '14px', fontWeight: 400, marginInlineStart: '8px', color: seg.harvestHint === 'מוכן לקטיף!' ? '#d97706' : '#6a8a6a' }"
                     >{{ seg.harvestHint }}</span></div>

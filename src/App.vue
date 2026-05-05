@@ -9,6 +9,11 @@ import PipeMap from './components/PipeMap.vue'
 import NurseryOrder from './components/NurseryOrder.vue'
 import { useRows } from './composables/useRows'
 import { useAuth } from './composables/useAuth'
+import {
+  ArrowUpTrayIcon,
+  CameraIcon,
+  ArrowRightStartOnRectangleIcon,
+} from '@heroicons/vue/24/outline'
 
 const showAerial = ref(false)
 const showExport = ref(false)
@@ -46,11 +51,11 @@ const activeRowId = computed(() => {
             </svg>
           </div>
           <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-lg border border-base-300">
-            <li><a @click="showExport = true">📤 ייצוא מפת גינה</a></li>
-            <li><a @click="showAerial = true">📷 מבט אווירי</a></li>
-            <li><a @click="showPipeMap = true">💧 מפת צנרת</a></li>
-            <li><a @click="showNurseryOrder = true">🌱 הזמנה למשתלה</a></li>
-            <li class="border-t border-base-200 mt-1 pt-1"><a @click="handleLogout">⏻ התנתק</a></li>
+            <li><a @click="showExport = true" class="gap-2"><ArrowUpTrayIcon class="w-4 h-4" /> ייצוא מפת גינה</a></li>
+            <li><a @click="showAerial = true" class="gap-2"><CameraIcon class="w-4 h-4" /> מבט אווירי</a></li>
+            <li><a @click="showPipeMap = true" class="gap-2"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21.5c-3.6 0-6.5-2.7-6.5-6C5.5 11.4 12 3 12 3s6.5 8.4 6.5 12.5c0 3.3-2.9 6-6.5 6z" /></svg> מפת צנרת</a></li>
+            <li><a @click="showNurseryOrder = true" class="gap-2"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21c0-4-2-7-5-9 3-1 5 1 5 4m0 5c0-4 2-7 5-9-3-1-5 1-5 4m0-12v8" /></svg> הזמנה למשתלה</a></li>
+            <li class="border-t border-base-200 mt-1 pt-1"><a @click="handleLogout" class="gap-2"><ArrowRightStartOnRectangleIcon class="w-4 h-4" /> התנתק</a></li>
           </ul>
         </div>
       </template>
