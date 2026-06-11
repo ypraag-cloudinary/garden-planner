@@ -54,3 +54,18 @@ export interface PipeMapping {
 export interface RowWithSegments extends GardenRow {
   segments: Segment[]
 }
+
+export interface GardenTask {
+  id: string
+  text: string
+  completed: boolean
+  position: number
+  created_at: string
+}
+
+export interface GardenShift {
+  id: string
+  shift_date: string
+  person: string
+  created_at: string
+}

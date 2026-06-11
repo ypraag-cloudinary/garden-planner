@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../pages/HomePage.vue'
 import RowPage from '../pages/RowPage.vue'
+import WorkBoardPage from '../pages/WorkBoardPage.vue'
 import LoginPage from '../pages/LoginPage.vue'
 import { useAuth } from '../composables/useAuth'
 
@@ -9,6 +10,7 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomePage },
     { path: '/row/:id', name: 'row', component: RowPage, props: true },
+    { path: '/work-board', name: 'work-board', component: WorkBoardPage },
     { path: '/login', name: 'login', component: LoginPage },
   ],
 })

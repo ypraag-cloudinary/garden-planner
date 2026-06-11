@@ -13,6 +13,7 @@ import {
   ArrowUpTrayIcon,
   CameraIcon,
   ArrowRightStartOnRectangleIcon,
+  ClipboardDocumentCheckIcon,
 } from '@heroicons/vue/24/outline'
 
 const showAerial = ref(false)
@@ -30,6 +31,7 @@ async function handleLogout() {
 }
 
 const isLogin = computed(() => route.name === 'login')
+const showMiniMap = computed(() => route.name !== 'work-board')
 
 const activeRowId = computed(() => {
   if (route.name === 'row' && route.params.id) {
@@ -51,6 +53,7 @@ const activeRowId = computed(() => {
             </svg>
           </div>
           <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-lg border border-base-300">
+            <li><router-link to="/work-board" class="gap-2"><ClipboardDocumentCheckIcon class="w-4 h-4" /> לוח עבודה</router-link></li>
             <li><a @click="showExport = true" class="gap-2"><ArrowUpTrayIcon class="w-4 h-4" /> ייצוא מפת גינה</a></li>
             <li><a @click="showAerial = true" class="gap-2"><CameraIcon class="w-4 h-4" /> מבט אווירי</a></li>
             <li><a @click="showPipeMap = true" class="gap-2"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21.5c-3.6 0-6.5-2.7-6.5-6C5.5 11.4 12 3 12 3s6.5 8.4 6.5 12.5c0 3.3-2.9 6-6.5 6z" /></svg> מפת צנרת</a></li>
@@ -65,6 +68,6 @@ const activeRowId = computed(() => {
     <GardenExport :open="showExport" :rows="rows" @close="showExport = false" />
     <PipeMap :open="showPipeMap" @close="showPipeMap = false" />
     <NurseryOrder :open="showNurseryOrder" :rows="rows" @close="showNurseryOrder = false" />
-    <GardenMiniMap v-if="rows.length > 0" :rows="rows" :active-row-id="activeRowId" />
+    <GardenMiniMap v-if="rows.length > 0 && showMiniMap" :rows="rows" :active-row-id="activeRowId" />
   </template>
 </template>

@@ -23,6 +23,7 @@ src/
 ├── pages/           # Route-level views
 │   ├── HomePage.vue     # Main dashboard — lists all rows, garden mini-map, aerial view, export, nursery order, pipe map
 │   ├── RowPage.vue      # Single-row detail view (props: { id: string })
+│   ├── WorkBoardPage.vue # Work board ("לוח עבודה") — task checklist + shift assignments + static events
 │   └── LoginPage.vue    # Email+password login
 ├── components/      # Reusable UI components (see Component Inventory below)
 ├── composables/     # Shared state & logic (see Composable API below)
@@ -43,6 +44,7 @@ src/
 |-------------|---------------|---------------|------------------------------|
 | `/`         | HomePage      | Yes           | Dashboard with row list      |
 | `/row/:id`  | RowPage       | Yes           | Row detail + segment editor  |
+| `/work-board`| WorkBoardPage| Yes           | Task checklist + shift assignments + events |
 | `/login`    | LoginPage     | No            | Redirects to `/` if logged in|
 
 ## Component Inventory
@@ -75,6 +77,8 @@ All composables use module-scope `ref`s (singleton pattern — no Pinia/Vuex).
 | `useArchive()`         | `archiving`                   | `archiveRow(rowId)`, `fetchHistory(rowId)`             |
 | `usePipeMappings()`    | `pipeMappings`, `loading`, `error` | `fetchPipeMappings()`, `updatePipeMapping(pipeNumber, description)` |
 | `usePlantingEstimate`  | (pure function, no state)     | `estimatePlanting(segmentLengthM, dripSpacingCm, spacingCm, lines)` → `PlantingEstimate` |
+| `useTasks()`           | `tasks`, `loading`, `error`   | `fetchTasks()`, `addTask(text)`, `toggleTask(id, completed)`, `deleteTask(id)` |
+| `useShifts()`          | `shifts`, `loading`, `error`  | `fetchShifts()`, `addShift(date)`, `updateShiftPerson(id, person)`, `deleteShift(id)` — also exports `formatShiftLabel(iso)` helper |
 
 ## Database Schema
 
@@ -126,6 +130,23 @@ Same as `segments` but with `archived_at` timestamp instead of `created_at`/`upd
 | `description` | text      | What the pipe waters     |
 | `updated_at`  | timestamptz |                        |
 
+### `garden_tasks`
+| Column       | Type            | Notes                              |
+|--------------|-----------------|------------------------------------|
+| `id`         | uuid (PK)       |                                    |
+| `text`       | text            | Task description (Hebrew)          |
+| `completed`  | boolean         |                                    |
+| `position`   | integer         | Manual/seed ordering               |
+| `created_at` | timestamptz     |                                    |
+
+### `garden_shifts`
+| Column        | Type        | Notes                                    |
+|---------------|-------------|------------------------------------------|
+| `id`          | uuid (PK)   |                                          |
+| `shift_date`  | date        | Coordinator shift date; day derived in UI |
+| `person`      | text        | Assigned coordinator name                |
+| `created_at`  | timestamptz |                                          |
+
 ### Notable RPC
 - `save_segments(p_row_id, p_segments)` — atomic upsert: deletes old segments for the row, inserts new ones.
 
@@ -143,6 +164,7 @@ Key migration files:
 - `20250430000001_pipe_mappings.sql` — pipe_mappings table
 - `20250504000001_add_spacing_columns.sql` — spacing_cm, lines, is_seeded on vegetables
 - `20250504000002_add_is_planned.sql` — is_planned on segments
+- `20250611000001_work_board.sql` — garden_tasks + garden_shifts tables (work board), seeded
 
 ## Key Patterns
 
