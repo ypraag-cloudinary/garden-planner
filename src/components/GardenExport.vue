@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
-import { toPng } from 'html-to-image'
+import { toCanvas } from 'html-to-image'
 import type { RowWithSegments, Segment } from '../types/database'
 import { useVegetables } from '../composables/useVegetables'
 import { estimatePlanting } from '../composables/usePlantingEstimate'
@@ -155,10 +155,11 @@ async function generateImage() {
   generating.value = true
   try {
     await nextTick()
-    const dataUrl = await toPng(renderTarget.value, {
-      pixelRatio: 3,
+    const canvas = await toCanvas(renderTarget.value, {
+      pixelRatio: 2,
       skipFonts: true,
     })
+    const dataUrl = canvas.toDataURL('image/webp', 0.92)
     previewUrl.value = dataUrl
   } catch (e) {
     console.error('Export failed:', e)
@@ -170,7 +171,7 @@ async function generateImage() {
 function downloadImage() {
   if (!previewUrl.value) return
   const link = document.createElement('a')
-  link.download = `גינה-קהילתית-${new Date().toISOString().slice(0, 10)}.png`
+  link.download = `גינה-קהילתית-${new Date().toISOString().slice(0, 10)}.webp`
   link.href = previewUrl.value
   link.click()
 }
@@ -180,7 +181,7 @@ async function shareImage() {
   try {
     const res = await fetch(previewUrl.value)
     const blob = await res.blob()
-    const file = new File([blob], 'garden-summary.png', { type: 'image/png' })
+    const file = new File([blob], 'garden-summary.webp', { type: 'image/webp' })
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file] })
       return
@@ -253,8 +254,8 @@ watch(() => props.open, async (isOpen) => {
             ref="renderTarget"
             dir="rtl"
             style="
-              width: 600px;
-              padding: 32px;
+              width: 1200px;
+              padding: 36px 190px;
               background: #f7faf7;
               font-family: Rubik, system-ui, sans-serif;
               color: #3d4a3d;
